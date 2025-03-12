@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package code;
+
+option go_package = "./code";
+
+// 请求与响应消息
+message CodeRequest {
+  string codeQuestion = 1;  // 用户提问的代码
+  uint32 userId = 2;  // 用户的id
+}
+
+message CodeResponse {
+  string codeExplain = 1;  // 代码解释
+}
+
+// 定义代码解释服务
+service CodeService {
+  rpc ExplainCode(CodeRequest) returns (CodeResponse);
+}
