@@ -1,4 +1,4 @@
-module grpc-ddd-demo
+module siwuai
 
 go 1.23.6
 
