@@ -20,12 +20,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("初始化 MySQL 失败: %v", err)
 	}
-	defer db.Close()
 
 	// 启动 gRPC 服务，使用配置文件中指定的端口
 	port := cfg.Server.Port
 	log.Printf("gRPC server starting on port %s...", port)
-	if err := grpc.RunGRPCServer(port, db); err != nil {
+	if err = grpc.RunGRPCServer(port, db); err != nil {
 		log.Fatalf("启动 gRPC 服务器失败: %v", err)
 	}
 }
