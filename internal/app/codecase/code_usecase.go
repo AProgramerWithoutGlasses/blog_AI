@@ -7,6 +7,7 @@ import (
 	"grpc-ddd-demo/internal/domain/service"
 	"grpc-ddd-demo/internal/infrastructure/code_infrastructure"
 	"grpc-ddd-demo/proto/code"
+	"strconv"
 )
 
 // CodeUseCase 定义用户用例接口
@@ -53,11 +54,20 @@ func (uc *codeUseCase) ExplainCode(req *code.CodeRequest) (code1 entity.Code, er
 		UserID: uint(req.UserId),
 		CodeID: code1.ID,
 	}
+
 	err = uc.repo.SaveHistory(history)
 	if err != nil {
 		fmt.Println("codecase.ExplainCode() repo.SaveHistory() err:", err)
 		return
 	}
+
+	history1, err := uc.repo.GetHistory(strconv.Itoa(int(req.UserId)))
+	if err != nil {
+		fmt.Println("codecase.ExplainCode() repo.GetHistory() err:", err)
+		return
+	}
+
+	fmt.Println("history:---", history1)
 
 	return
 }

@@ -17,7 +17,7 @@ type codeGRPCHandler struct {
 // NewCodeGRPCHandler 初始化 gRPC 处理器及其依赖，传入 MySQL 连接
 func NewCodeGRPCHandler(db *gorm.DB) code.CodeServiceServer {
 	repo := persistence.NewMySQLCodeRepository(db)
-	ds := service.NewCodeDomainService()
+	ds := service.NewCodeDomainService(repo)
 	uc := codecase.NewCodeUseCase(repo, ds)
 	return &codeGRPCHandler{uc: uc}
 }

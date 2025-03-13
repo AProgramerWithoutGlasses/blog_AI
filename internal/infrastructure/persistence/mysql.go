@@ -5,7 +5,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"grpc-ddd-demo/internal/domain/model/entity"
 	"grpc-ddd-demo/internal/infrastructure/config"
 )
 
@@ -32,10 +31,10 @@ func NewMySQLDB(cfg config.Config) (db *gorm.DB, err error) {
 	fmt.Println("MySQL 连接成功")
 
 	// 表迁移
-	err = db.AutoMigrate(&entity.Code{}, &entity.History{})
-	if err != nil {
-		fmt.Println("persistence.NewMySQLDB() db.AutoMigrate() err: ", err)
-		return
-	}
+	//err = db.AutoMigrate(&entity.Code{}, &entity.History{})
+	//if err != nil {
+	//	fmt.Println("persistence.NewMySQLDB() db.AutoMigrate() err: ", err)
+	//	return
+	//}
 	return
 }

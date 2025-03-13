@@ -45,7 +45,8 @@ func main() {
 	client1 := pbcode.NewCodeServiceClient(conn)
 
 	req1 := &pbcode.CodeRequest{
-		CodeQuestion: "你好，你是谁？",
+		CodeQuestion: "你是谁创造的",
+		UserId:       2,
 	}
 
 	resp1, err := client1.ExplainCode(ctx, req1)
