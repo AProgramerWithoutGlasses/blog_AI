@@ -2,7 +2,7 @@ package grpc
 
 import (
 	"context"
-	"database/sql"
+	"gorm.io/gorm"
 	"grpc-ddd-demo/proto/user"
 
 	"grpc-ddd-demo/internal/app/usecase"
@@ -18,7 +18,7 @@ type userGRPCHandler struct {
 }
 
 // NewUserGRPCHandler 初始化 gRPC 处理器及其依赖，传入 MySQL 连接
-func NewUserGRPCHandler(db *sql.DB) user.UserServiceServer {
+func NewUserGRPCHandler(db *gorm.DB) user.UserServiceServer {
 	repo := persistence.NewMySQLUserRepository(db)
 	ds := service.NewUserDomainService()
 	uc := usecase.NewUserUseCase(repo, ds)

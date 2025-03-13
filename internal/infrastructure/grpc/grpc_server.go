@@ -1,7 +1,8 @@
 package grpc
 
 import (
-	"database/sql"
+	"gorm.io/gorm"
+	pbcode "grpc-ddd-demo/proto/code"
 	pbllm "grpc-ddd-demo/proto/llm"
 	pbuser "grpc-ddd-demo/proto/user"
 	"net"
@@ -11,7 +12,7 @@ import (
 )
 
 // RunGRPCServer 启动 gRPC 服务器，同时注册 UserService 和 LLMService
-func RunGRPCServer(port string, db *sql.DB) error {
+func RunGRPCServer(port string, db *gorm.DB) error {
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		return err
@@ -27,6 +28,9 @@ func RunGRPCServer(port string, db *sql.DB) error {
 		return err
 	}
 	pbllm.RegisterLLMServiceServer(grpcServer, llmSvc)
+
+	// 注册 CodeService
+	pbcode.RegisterCodeServiceServer(grpcServer, server.NewCodeGRPCHandler(db))
 
 	return grpcServer.Serve(lis)
 }

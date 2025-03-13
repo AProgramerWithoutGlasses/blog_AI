@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"fmt"
+	pbcode "grpc-ddd-demo/proto/code"
 	"log"
 	"time"
 
 	"google.golang.org/grpc"
 
-	pb "grpc-ddd-demo/proto/llm"
+	pbllm "grpc-ddd-demo/proto/llm"
 )
 
 // 用于模拟客户端通过gRPC调用LLM服务
@@ -20,14 +22,14 @@ func main() {
 	defer conn.Close()
 
 	// 创建 LLMService 客户端
-	client := pb.NewLLMServiceClient(conn)
+	client := pbllm.NewLLMServiceClient(conn)
 
 	// 设置请求上下文和超时
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 
 	// 构造请求
-	req := &pb.GenerateRequest{
+	req := &pbllm.GenerateRequest{
 		Prompt: "下午好",
 	}
 
@@ -38,4 +40,20 @@ func main() {
 	}
 
 	log.Printf("LLM生成的回复: %s", resp.Completion)
+
+	// -----------------------------------
+	client1 := pbcode.NewCodeServiceClient(conn)
+
+	req1 := &pbcode.CodeRequest{
+		CodeQuestion: "你是谁创造的",
+		UserId:       2,
+	}
+
+	resp1, err := client1.ExplainCode(ctx, req1)
+	if err != nil {
+		fmt.Println("client1.ExplainCode()", err)
+	}
+
+	fmt.Println("resp1:", resp1)
+
 }
