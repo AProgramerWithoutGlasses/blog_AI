@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"grpc-ddd-demo/internal/domain/model/entity"
+	"siwuai/internal/domain/model/entity"
 )
 
 // UserDomainService 定义领域服务接口

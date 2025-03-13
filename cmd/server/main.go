@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"grpc-ddd-demo/internal/infrastructure/config"
-	"grpc-ddd-demo/internal/infrastructure/grpc"
-	mysqlInfra "grpc-ddd-demo/internal/infrastructure/persistence"
+	"siwuai/internal/infrastructure/config"
+	"siwuai/internal/infrastructure/grpc"
+	mysqlInfra "siwuai/internal/infrastructure/persistence"
 )
 
 func main() {

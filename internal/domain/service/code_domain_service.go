@@ -2,10 +2,10 @@ package service
 
 import (
 	"fmt"
-	"grpc-ddd-demo/internal/domain/model/entity"
-	"grpc-ddd-demo/internal/domain/repository"
-	"grpc-ddd-demo/internal/infrastructure/code_infrastructure"
-	"grpc-ddd-demo/proto/code"
+	"siwuai/internal/domain/model/entity"
+	"siwuai/internal/domain/repository"
+	"siwuai/internal/infrastructure/code_infrastructure"
+	"siwuai/proto/code"
 )
 
 // UserDomainService 定义领域服务接口

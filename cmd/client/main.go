@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	pbcode "grpc-ddd-demo/proto/code"
 	"log"
+	pbcode "siwuai/proto/code"
 	"time"
 
 	"google.golang.org/grpc"
 
-	pbllm "grpc-ddd-demo/proto/llm"
+	pbllm "siwuai/proto/llm"
 )
 
 // 用于模拟客户端通过gRPC调用LLM服务

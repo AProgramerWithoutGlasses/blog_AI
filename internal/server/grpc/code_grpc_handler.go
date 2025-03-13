@@ -3,10 +3,10 @@ package grpc
 import (
 	"context"
 	"gorm.io/gorm"
-	"grpc-ddd-demo/internal/app/codecase"
-	"grpc-ddd-demo/internal/domain/service"
-	"grpc-ddd-demo/internal/infrastructure/persistence"
-	"grpc-ddd-demo/proto/code"
+	"siwuai/internal/app/codecase"
+	"siwuai/internal/domain/service"
+	"siwuai/internal/infrastructure/persistence"
+	"siwuai/proto/code"
 )
 
 type codeGRPCHandler struct {

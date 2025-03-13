@@ -7,7 +7,7 @@ import (
 
 	"github.com/tmc/langchaingo/llms"
 	"github.com/tmc/langchaingo/llms/openai"
-	pb "grpc-ddd-demo/proto/llm"
+	pb "siwuai/proto/llm"
 )
 
 // llmGRPCHandler 实现了 pb.LLMServiceServer 接口

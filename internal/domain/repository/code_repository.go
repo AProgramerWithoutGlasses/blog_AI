@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"grpc-ddd-demo/internal/domain/model/entity"
+	"siwuai/internal/domain/model/entity"
 )
 
 // CodeRepository 定义了代码块的访问接口

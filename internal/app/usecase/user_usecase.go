@@ -1,9 +1,9 @@
 package usecase
 
 import (
-	"grpc-ddd-demo/internal/domain/model/entity"
-	"grpc-ddd-demo/internal/domain/repository"
-	"grpc-ddd-demo/internal/domain/service"
+	"siwuai/internal/domain/model/entity"
+	"siwuai/internal/domain/repository"
+	"siwuai/internal/domain/service"
 )
 
 // UserUseCase 定义用户用例接口

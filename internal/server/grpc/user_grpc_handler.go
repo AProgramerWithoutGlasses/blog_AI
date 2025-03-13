@@ -3,12 +3,12 @@ package grpc
 import (
 	"context"
 	"gorm.io/gorm"
-	"grpc-ddd-demo/proto/user"
+	"siwuai/proto/user"
 
-	"grpc-ddd-demo/internal/app/usecase"
-	"grpc-ddd-demo/internal/domain/model/entity"
-	"grpc-ddd-demo/internal/domain/service"
-	"grpc-ddd-demo/internal/infrastructure/persistence"
+	"siwuai/internal/app/usecase"
+	"siwuai/internal/domain/model/entity"
+	"siwuai/internal/domain/service"
+	"siwuai/internal/infrastructure/persistence"
 )
 
 // userGRPCHandler 实现了 pb.UserServiceServer 接口
