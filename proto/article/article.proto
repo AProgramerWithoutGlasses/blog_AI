@@ -9,8 +9,10 @@ service articleService {
   rpc GetArticleInfoFirst (GetArticleInfoFirstRequest) returns (GetArticleInfoFirstResponse);
   // 将文章的ID保存到相应的记录中
   rpc SaveArticleID (SaveArticleIDRequest) returns (SaveArticleIDResponse);
+  // 获取文章的摘要、总结、标签
   rpc GetArticleInfo (GetArticleInfoRequest) returns (GetArticleInfoResponse);
-
+  // 删除文章相关信息
+  rpc DelArticleInfo (DelArticleInfoRequest) returns (DelArticleInfoResponse);
 }
 
 message GetArticleInfoFirstRequest {
@@ -37,6 +39,14 @@ message GetArticleInfoRequest {
 
 message GetArticleInfoResponse {
   ArticleInfo articleInfo = 1;
+}
+
+message DelArticleInfoRequest {
+  uint32 articleID = 1; // 文章ID
+}
+
+message DelArticleInfoResponse {
+  string inform = 1; // 告知客户端是否操作成功
 }
 
 message ArticleInfo {

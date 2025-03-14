@@ -3,8 +3,8 @@ package service
 import (
 	"fmt"
 	"siwuai/internal/domain/model/entity"
-	"siwuai/internal/domain/repository"
 	"siwuai/internal/infrastructure/code_infrastructure"
+	"siwuai/internal/infrastructure/persistence"
 	"siwuai/proto/code"
 )
 
@@ -15,11 +15,11 @@ type CodeDomainService interface {
 }
 
 type codeDomainService struct {
-	repo repository.CodeRepository
+	repo persistence.CodeRepository
 }
 
 // NewUserDomainService 创建领域服务实例
-func NewCodeDomainService(repo repository.CodeRepository) CodeDomainService {
+func NewCodeDomainService(repo persistence.CodeRepository) CodeDomainService {
 	return &codeDomainService{repo: repo}
 }
 

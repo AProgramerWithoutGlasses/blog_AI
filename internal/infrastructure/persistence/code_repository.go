@@ -1,4 +1,4 @@
-package repository
+package persistence
 
 import (
 	"siwuai/internal/domain/model/entity"

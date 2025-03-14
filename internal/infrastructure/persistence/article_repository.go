@@ -1,0 +1,66 @@
+package persistence
+
+import "siwuai/internal/domain/model/entity"
+
+type ArticleRepository interface {
+	VerifyHash(key string) (*entity.Article, error)
+
+	//// GetArticleInfoFirst 第一次获取文章的摘要、总结、标签
+	//GetArticleInfoFirst(content string) (*entity.Article, error)
+	//
+	//// SaveArticleID 将文章的ID保存到相应的记录中
+	//SaveArticleID(articleID uint) (string, error)
+
+	//
+
+}
+
+//service articleService {
+//// 第一次获取文章的摘要、总结、标签
+//rpc GetArticleInfoFirst (GetArticleInfoFirstRequest) returns (GetArticleInfoFirstResponse);
+//// 将文章的ID保存到相应的记录中
+//rpc SaveArticleID (SaveArticleIDRequest) returns (SaveArticleIDResponse);
+//// 获取文章的摘要、总结、标签
+//rpc GetArticleInfo (GetArticleInfoRequest) returns (GetArticleInfoResponse);
+//// 删除文章相关信息
+//rpc DelArticleInfo (DelArticleInfoRequest) returns (DelArticleInfoResponse);
+//
+//message GetArticleInfoFirstRequest {
+//string content = 1; // 文章的全部内容
+//repeated string tags = 2; // 所有标签, 用于给文章匹配相应的标签
+//}
+//
+//message GetArticleInfoFirstResponse {
+//
+//ArticleInfo articleInfo = 1;
+//}
+//
+//message SaveArticleIDRequest {
+//uint32 articleID = 1; // 文章ID
+//}
+//
+//message SaveArticleIDResponse {
+//string inform = 1; // 告知客户端是否操作成功
+//}
+//
+//message GetArticleInfoRequest {
+//uint32 articleID = 1; // 文章ID
+//}
+//
+//message GetArticleInfoResponse {
+//ArticleInfo articleInfo = 1;
+//}
+//
+//message DelArticleInfoRequest {
+//uint32 articleID = 1; // 文章ID
+//}
+//
+//message DelArticleInfoResponse {
+//string inform = 1; // 告知客户端是否操作成功
+//}
+//
+//message ArticleInfo {
+//string summary = 1; // 文章的摘要
+//string abstract = 2; // 文章的总结
+//repeated string tags = 3; // 与文章相匹配的标签
+//}

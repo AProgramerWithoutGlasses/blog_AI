@@ -5,7 +5,8 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"grpc-ddd-demo/internal/infrastructure/config"
+	"siwuai/internal/domain/model/entity"
+	"siwuai/internal/infrastructure/config"
 )
 
 // NewMySQLDB 根据配置文件创建并初始化 GORM 的 MySQL 数据库连接
@@ -31,10 +32,14 @@ func NewMySQLDB(cfg config.Config) (db *gorm.DB, err error) {
 	fmt.Println("MySQL 连接成功")
 
 	// 表迁移
-	//err = db.AutoMigrate(&entity.Code{}, &entity.History{})
-	//if err != nil {
-	//	fmt.Println("persistence.NewMySQLDB() db.AutoMigrate() err: ", err)
-	//	return
-	//}
+	err = db.AutoMigrate(
+		&entity.Code{},
+		&entity.History{},
+		&entity.Article{},
+	)
+	if err != nil {
+		fmt.Println("persistence.NewMySQLDB() db.AutoMigrate() err: ", err)
+		return
+	}
 	return
 }

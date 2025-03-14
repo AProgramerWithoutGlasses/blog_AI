@@ -1,10 +1,10 @@
-package persistence
+package impl
 
 import (
 	"errors"
 	"gorm.io/gorm"
-	"grpc-ddd-demo/internal/domain/model/entity"
-	"grpc-ddd-demo/internal/domain/repository"
+	"siwuai/internal/domain/model/entity"
+	"siwuai/internal/infrastructure/persistence"
 )
 
 type mysqlCodeRepository struct {
@@ -12,7 +12,7 @@ type mysqlCodeRepository struct {
 }
 
 // NewMySQLCodeRepository 返回基于 MySQL 的仓储实现
-func NewMySQLCodeRepository(db *gorm.DB) repository.CodeRepository {
+func NewMySQLCodeRepository(db *gorm.DB) persistence.CodeRepository {
 	return &mysqlCodeRepository{db: db}
 }
 

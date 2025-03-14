@@ -3,22 +3,22 @@ package grpc
 import (
 	"context"
 	"gorm.io/gorm"
-	"siwuai/internal/app/codecase"
+	"siwuai/internal/app"
 	"siwuai/internal/domain/service"
-	"siwuai/internal/infrastructure/persistence"
+	"siwuai/internal/infrastructure/persistence/impl"
 	"siwuai/proto/code"
 )
 
 type codeGRPCHandler struct {
 	code.UnimplementedCodeServiceServer
-	uc codecase.CodeUseCase
+	uc app.CodeUseCase
 }
 
 // NewCodeGRPCHandler 初始化 gRPC 处理器及其依赖，传入 MySQL 连接
 func NewCodeGRPCHandler(db *gorm.DB) code.CodeServiceServer {
-	repo := persistence.NewMySQLCodeRepository(db)
+	repo := impl.NewMySQLCodeRepository(db)
 	ds := service.NewCodeDomainService(repo)
-	uc := codecase.NewCodeUseCase(repo, ds)
+	uc := app.NewCodeUseCase(repo, ds)
 	return &codeGRPCHandler{uc: uc}
 }
 

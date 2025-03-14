@@ -1,11 +1,11 @@
-package codecase
+package app
 
 import (
 	"fmt"
 	"siwuai/internal/domain/model/entity"
-	"siwuai/internal/domain/repository"
 	"siwuai/internal/domain/service"
-	"siwuai/internal/infrastructure/code_infrastructure"
+	"siwuai/internal/infrastructure/persistence"
+	"siwuai/internal/infrastructure/utils"
 	"siwuai/proto/code"
 	"strconv"
 )
@@ -16,12 +16,12 @@ type CodeUseCase interface {
 }
 
 type codeUseCase struct {
-	repo              repository.CodeRepository
+	repo              persistence.CodeRepository
 	codeDomainService service.CodeDomainService
 }
 
 // NewCodeUseCase 构造函数
-func NewCodeUseCase(r repository.CodeRepository, ds service.CodeDomainService) CodeUseCase {
+func NewCodeUseCase(r persistence.CodeRepository, ds service.CodeDomainService) CodeUseCase {
 	return &codeUseCase{
 		repo:              r,
 		codeDomainService: ds,
@@ -30,7 +30,7 @@ func NewCodeUseCase(r repository.CodeRepository, ds service.CodeDomainService) C
 
 func (uc *codeUseCase) ExplainCode(req *code.CodeRequest) (code1 entity.Code, err error) {
 	// 获取hash值
-	key, err := code_infrastructure.Hash(req.CodeQuestion)
+	key, err := utils.Hash(req.CodeQuestion)
 	if err != nil {
 		fmt.Println("codecase.ExplainCode() unique.Hash() err:", err)
 		return
