@@ -1,10 +1,11 @@
-package impl
+package persistence
 
 import (
 	"errors"
+	"fmt"
 	"gorm.io/gorm"
 	"siwuai/internal/domain/model/entity"
-	"siwuai/internal/infrastructure/persistence"
+	"siwuai/internal/domain/repository"
 )
 
 type mysqlCodeRepository struct {
@@ -12,7 +13,7 @@ type mysqlCodeRepository struct {
 }
 
 // NewMySQLCodeRepository 返回基于 MySQL 的仓储实现
-func NewMySQLCodeRepository(db *gorm.DB) persistence.CodeRepository {
+func NewMySQLCodeRepository(db *gorm.DB) repository.CodeRepository {
 	return &mysqlCodeRepository{db: db}
 }
 
@@ -29,6 +30,9 @@ func (r *mysqlCodeRepository) GetCodeByHash(key string) (code entity.Code, ok bo
 
 func (r *mysqlCodeRepository) SaveCode(code entity.Code) (uint, error) {
 	err := r.db.Create(&code).Error
+	if err != nil {
+		fmt.Println("r.db.Create(&code) err: ", err)
+	}
 	return code.ID, err
 }
 

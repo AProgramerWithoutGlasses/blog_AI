@@ -1,73 +1,10 @@
 package app
 
 import (
-	"fmt"
-	"siwuai/internal/domain/model/entity"
-	"siwuai/internal/domain/service"
-	"siwuai/internal/infrastructure/persistence"
-	"siwuai/internal/infrastructure/utils"
-	"siwuai/proto/code"
-	"strconv"
+	"siwuai/internal/domain/model/dto"
 )
 
 // CodeUseCase 定义用户用例接口
 type CodeUseCase interface {
-	ExplainCode(req *code.CodeRequest) (entity.Code, error)
-}
-
-type codeUseCase struct {
-	repo              persistence.CodeRepository
-	codeDomainService service.CodeDomainService
-}
-
-// NewCodeUseCase 构造函数
-func NewCodeUseCase(r persistence.CodeRepository, ds service.CodeDomainService) CodeUseCase {
-	return &codeUseCase{
-		repo:              r,
-		codeDomainService: ds,
-	}
-}
-
-func (uc *codeUseCase) ExplainCode(req *code.CodeRequest) (code1 entity.Code, err error) {
-	// 获取hash值
-	key, err := utils.Hash(req.CodeQuestion)
-	if err != nil {
-		fmt.Println("codecase.ExplainCode() unique.Hash() err:", err)
-		return
-	}
-
-	code1, ok, err := uc.repo.GetCodeByHash(key)
-	if err != nil {
-		fmt.Println("codecase.ExplainCode() repo.GetCodeByHash() err:", err)
-		return
-	}
-
-	if !ok {
-		code1, err = uc.codeDomainService.SaveCode(req, key)
-		if err != nil {
-			fmt.Println("codecase.ExplainCode() codeDomainService.SaveCode() err:", err)
-			return
-		}
-	}
-
-	history := entity.History{
-		UserID: uint(req.UserId),
-		CodeID: code1.ID,
-	}
-
-	err = uc.repo.SaveHistory(history)
-	if err != nil {
-		fmt.Println("codecase.ExplainCode() repo.SaveHistory() err:", err)
-		return
-	}
-
-	history1, err := uc.repo.GetHistory(strconv.Itoa(int(req.UserId)))
-	if err != nil {
-		fmt.Println("codecase.ExplainCode() repo.GetHistory() err:", err)
-		return
-	}
-
-	fmt.Println("history:---", history1)
-
-	return
+	ExplainCode(req *dto.CodeReq) (*dto.Code, error)
 }
