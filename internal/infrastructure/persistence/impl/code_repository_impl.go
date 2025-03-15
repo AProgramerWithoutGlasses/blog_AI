@@ -28,7 +28,7 @@ func (r *mysqlCodeRepository) GetCodeByHash(key string) (code entity.Code, ok bo
 	return code, true, err
 }
 
-func (r *mysqlCodeRepository) SaveCode(code entity.Code) (uint, error) {
+func (r *mysqlCodeRepository) SaveCode(code *entity.Code) (uint, error) {
 	err := r.db.Create(&code).Error
 	if err != nil {
 		fmt.Println("r.db.Create(&code) err: ", err)
@@ -54,4 +54,5 @@ func (r *mysqlCodeRepository) GetHistory(userId string) (history []entity.Code, 
 }
 func (r *mysqlCodeRepository) SaveHistory(history entity.History) (err error) {
 	return r.db.Create(&history).Error
+
 }

@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
+	"siwuai/internal/infrastructure/redis_utils"
+	"siwuai/internal/infrastructure/utils"
 	"syscall"
 
 	"siwuai/internal/infrastructure/config"
@@ -18,12 +21,29 @@ func main() {
 	cfg, err := config.LoadConfig("configs")
 	if err != nil {
 		log.Fatalf("加载配置文件失败: %v", err)
+		return
 	}
 
 	// 封装 MySQL 初始化
 	db, err := mysqlInfra.NewMySQLDB(cfg)
 	if err != nil {
 		log.Fatalf("初始化 MySQL 失败: %v", err)
+		return
+	}
+
+	// 初始化 Redis
+	redisClient, err := redis_utils.NewRedisClient(cfg)
+	if err != nil {
+		log.Fatalf("初始化 Redis 失败: %v", err)
+		return
+	}
+	defer redisClient.Close()
+
+	// 初始化布隆过滤器（假设预计存储 100 万条记录，误判率 0.01）
+	bf, err := utils.LoadBloomFilter(db)
+	if err != nil {
+		fmt.Println("加载布隆过滤器失败 utils.LoadBloomFilter() err: ", err)
+		return
 	}
 
 	// etcd 注册初始化，使用配置文件中的 etcd 配置
@@ -60,7 +80,7 @@ func main() {
 	// 启动 gRPC 服务，使用配置文件中指定的端口（例如：cfg.Server.Port）
 	port := cfg.Server.Port
 	log.Printf("gRPC 服务器启动在端口 %s...", port)
-	if err = grpc.RunGRPCServer(port, db); err != nil {
+	if err = grpc.RunGRPCServer(port, db, redisClient, bf); err != nil {
 		log.Fatalf("启动 gRPC 服务器失败: %v", err)
 	}
 }

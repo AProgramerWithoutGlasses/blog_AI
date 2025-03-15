@@ -6,7 +6,6 @@ import (
 	"log"
 	"siwuai/internal/infrastructure/config"
 	"siwuai/internal/infrastructure/etcd"
-	pb "siwuai/proto/article"
 	pbcode "siwuai/proto/code"
 	"time"
 
@@ -78,7 +77,7 @@ func main() {
 	// 设置请求上下文和超时
 	ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
-	client1 := pb.NewArticleServiceClient(conn)
+	//client1 := pb.NewArticleServiceClient(conn)
 
 	//tags := []string{"前端", "后端", "MySQL", "Redis", "Git", "HTTP", "Gorm"}
 	//req1 := &pb.GetArticleInfoFirstRequest{
@@ -114,29 +113,30 @@ func main() {
 	//} else {
 	//	fmt.Printf("++++++++++++++++++> \n %v", resp1)
 	//}
-
-	req1 := &pb.DelArticleInfoRequest{
-		ArticleID: 1,
-	}
-	resp1, err := client1.DelArticleInfo(ctx, req1)
-	if err != nil {
-		fmt.Printf("client1.DelArticleInfo -------> \n %v \n %v", resp1, err)
-	} else {
-		fmt.Printf("++++++++++++++++++> \n %v", resp1)
-	}
+	//
+	//req1 := &pb.DelArticleInfoRequest{
+	//	ArticleID: 1,
+	//}
+	//resp1, err := client1.DelArticleInfo(ctx, req1)
+	//if err != nil {
+	//	fmt.Printf("client1.DelArticleInfo -------> \n %v \n %v", resp1, err)
+	//} else {
+	//	fmt.Printf("++++++++++++++++++> \n %v", resp1)
+	//}
 
 	// code ------------------------------------------
 	client2 := pbcode.NewCodeServiceClient(conn)
 
 	req2 := &pbcode.CodeRequest{
-		CodeQuestion: "你是谁创造的",
+		CodeQuestion: "蛇肉好吃吗",
 		UserId:       2,
 		CodeType:     "go",
 	}
 
 	resp2, err := client2.ExplainCode(ctx, req2)
 	if err != nil {
-		fmt.Println("client1.ExplainCode()", err)
+		fmt.Println("client2.ExplainCode() err:", err)
+		return
 	}
 
 	fmt.Println("resp2:", resp2)

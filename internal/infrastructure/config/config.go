@@ -1,9 +1,8 @@
 package config
 
 import (
-	"log"
-
 	"github.com/spf13/viper"
+	"log"
 )
 
 // Config 定义了应用的配置结构体
@@ -25,6 +24,12 @@ type Config struct {
 		ServiceAddr string   `mapstructure:"serviceAddr"` // 服务地址，例如 "127.0.0.1:50051"
 		TTL         int64    `mapstructure:"ttl"`         // 租约时间（秒）
 	} `mapstructure:"etcd"`
+	Redis struct {
+		Addr     string `mapstructure:"addr"`     // Redis 地址
+		Password string `mapstructure:"password"` // Redis 密码
+		DB       int    `mapstructure:"db"`       // Redis 数据库编号
+		Timeout  int    `mapstructure:"timeout"`  // 操作超时时间（秒）
+	} `mapstructure:"redis"`
 }
 
 // LoadConfig 加载并解析配置文件

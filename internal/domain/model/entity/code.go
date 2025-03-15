@@ -32,3 +32,14 @@ func (c Code) CodeToDto() *dto.Code {
 		Key:         c.Key,
 	}
 }
+
+func (c Code) DtoToCode(dto *dto.Code) *Code {
+	return &Code{
+		Model: gorm.Model{
+			ID: c.ID,
+		},
+		Key:         dto.Key,
+		Question:    dto.Question,
+		Explanation: dto.Explanation,
+	}
+}
