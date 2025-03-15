@@ -2,13 +2,13 @@ package grpc
 
 import (
 	"gorm.io/gorm"
-	pbcode "grpc-ddd-demo/proto/code"
-	pbllm "grpc-ddd-demo/proto/llm"
-	pbuser "grpc-ddd-demo/proto/user"
 	"net"
+	pbcode "siwuai/proto/code"
+	pbllm "siwuai/proto/llm"
+	pbuser "siwuai/proto/user"
 
 	"google.golang.org/grpc"
-	server "grpc-ddd-demo/internal/server/grpc"
+	server "siwuai/internal/server/grpc"
 )
 
 // RunGRPCServer 启动 gRPC 服务器，同时注册 UserService 和 LLMService

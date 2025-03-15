@@ -2,10 +2,10 @@ package app
 
 import (
 	"fmt"
-	"grpc-ddd-demo/internal/app"
-	"grpc-ddd-demo/internal/domain/model/dto"
-	"grpc-ddd-demo/internal/domain/repository"
-	"grpc-ddd-demo/internal/domain/service"
+	"siwuai/internal/app"
+	"siwuai/internal/domain/model/dto"
+	"siwuai/internal/domain/repository"
+	"siwuai/internal/domain/service"
 )
 
 type codeUseCase struct {

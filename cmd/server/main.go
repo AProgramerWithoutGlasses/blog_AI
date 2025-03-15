@@ -7,10 +7,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"grpc-ddd-demo/internal/infrastructure/config"
-	"grpc-ddd-demo/internal/infrastructure/etcd"
-	"grpc-ddd-demo/internal/infrastructure/grpc"
-	mysqlInfra "grpc-ddd-demo/internal/infrastructure/persistence"
+	"siwuai/internal/infrastructure/config"
+	"siwuai/internal/infrastructure/etcd"
+	"siwuai/internal/infrastructure/grpc"
+	mysqlInfra "siwuai/internal/infrastructure/persistence"
 )
 
 func main() {

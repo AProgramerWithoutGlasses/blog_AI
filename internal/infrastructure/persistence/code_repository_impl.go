@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
-	"grpc-ddd-demo/internal/domain/model/entity"
-	"grpc-ddd-demo/internal/domain/repository"
+	"siwuai/internal/domain/model/entity"
+	"siwuai/internal/domain/repository"
 )
 
 type mysqlCodeRepository struct {

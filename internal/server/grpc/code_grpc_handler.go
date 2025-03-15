@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"gorm.io/gorm"
-	"grpc-ddd-demo/internal/app"
-	"grpc-ddd-demo/internal/domain/model/dto"
-	"grpc-ddd-demo/internal/domain/service"
-	"grpc-ddd-demo/internal/infrastructure/persistence"
-	"grpc-ddd-demo/proto/code"
+	"siwuai/internal/app"
+	"siwuai/internal/domain/model/dto"
+	"siwuai/internal/domain/service"
+	"siwuai/internal/infrastructure/persistence"
+	"siwuai/proto/code"
 )
 
 type codeGRPCHandler struct {

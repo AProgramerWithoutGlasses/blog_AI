@@ -5,7 +5,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"grpc-ddd-demo/internal/infrastructure/config"
+	"siwuai/internal/infrastructure/config"
 )
 
 // NewMySQLDB 根据配置文件创建并初始化 GORM 的 MySQL 数据库连接

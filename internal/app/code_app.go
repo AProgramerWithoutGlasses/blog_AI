@@ -1,7 +1,7 @@
 package app
 
 import (
-	"grpc-ddd-demo/internal/domain/model/dto"
+	"siwuai/internal/domain/model/dto"
 )
 
 // CodeUseCase 定义用户用例接口

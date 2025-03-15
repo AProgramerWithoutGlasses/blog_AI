@@ -2,10 +2,10 @@ package service
 
 import (
 	"fmt"
-	"grpc-ddd-demo/internal/domain/model/dto"
-	"grpc-ddd-demo/internal/domain/model/entity"
-	"grpc-ddd-demo/internal/domain/repository"
-	"grpc-ddd-demo/internal/infrastructure/utils"
+	"siwuai/internal/domain/model/dto"
+	"siwuai/internal/domain/model/entity"
+	"siwuai/internal/domain/repository"
+	"siwuai/internal/infrastructure/utils"
 	"strconv"
 )
 

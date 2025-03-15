@@ -2,7 +2,7 @@ package entity
 
 import (
 	"gorm.io/gorm"
-	"grpc-ddd-demo/internal/domain/model/dto"
+	"siwuai/internal/domain/model/dto"
 )
 
 // Code 代表代码存储表
