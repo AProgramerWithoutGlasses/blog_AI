@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"siwuai/internal/domain/model/entity"
+	"siwuai/internal/infrastructure/persistence"
 )
 
 type articleRepository struct {
 	db *gorm.DB
 }
 
-func NewArticleRepository(db *gorm.DB) *articleRepository {
+func NewArticleRepository(db *gorm.DB) persistence.ArticleRepositoryInterface {
 	return &articleRepository{
 		db: db,
 	}
