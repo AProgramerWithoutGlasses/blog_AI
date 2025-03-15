@@ -9,7 +9,7 @@ service articleService {
   rpc GetArticleInfoFirst (GetArticleInfoFirstRequest) returns (GetArticleInfoFirstResponse);
   // 将文章的ID保存到相应的记录中
   rpc SaveArticleID (SaveArticleIDRequest) returns (SaveArticleIDResponse);
-  // 获取文章的摘要、总结、标签
+  // 非首次获取文章的摘要、总结、标签
   rpc GetArticleInfo (GetArticleInfoRequest) returns (GetArticleInfoResponse);
   // 删除文章相关信息
   rpc DelArticleInfo (DelArticleInfoRequest) returns (DelArticleInfoResponse);
@@ -21,12 +21,15 @@ message GetArticleInfoFirstRequest {
 }
 
 message GetArticleInfoFirstResponse {
-
-  ArticleInfo articleInfo = 1;
+  string Key = 1; // hash值
+  string summary = 2; // 文章的摘要
+  string abstract = 3; // 文章的总结
+  repeated string tags = 4; // 与文章相匹配的标签
 }
 
 message SaveArticleIDRequest {
-  uint32 articleID = 1; // 文章ID
+  string Key = 1; // hash值
+  uint32 articleID = 2; // 文章ID
 }
 
 message SaveArticleIDResponse {
@@ -38,7 +41,8 @@ message GetArticleInfoRequest {
 }
 
 message GetArticleInfoResponse {
-  ArticleInfo articleInfo = 1;
+  string summary = 1; // 文章的摘要
+  string abstract = 2; // 文章的总结
 }
 
 message DelArticleInfoRequest {
@@ -47,10 +51,4 @@ message DelArticleInfoRequest {
 
 message DelArticleInfoResponse {
   string inform = 1; // 告知客户端是否操作成功
-}
-
-message ArticleInfo {
-  string summary = 1; // 文章的摘要
-  string abstract = 2; // 文章的总结
-  repeated string tags = 3; // 与文章相匹配的标签
 }

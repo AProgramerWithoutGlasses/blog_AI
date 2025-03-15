@@ -7,30 +7,34 @@ import (
 
 type Article struct {
 	gorm.Model
-	Key       string `json:"key"`        // 用于标识文章的状态(是否被修改)
-	ArticleID uint   `json:"article_id"` // 文章ID
-	Abstract  string `json:"abstract"`   // 发布文章时，提取的文章摘要
-	Summary   string `json:"summary"`    // 发布文章时，提取的文章总结
+	Key       string `gorm:"key"`        // 用于标识文章的状态(是否被修改)
+	ArticleID uint   `gorm:"article_id"` // 文章ID
+	Abstract  string `gorm:"abstract"`   // 发布文章时，提取的文章摘要
+	Summary   string `gorm:"summary"`    // 发布文章时，提取的文章总结
 }
 
-func (*Article) TableName() string {
-	return ""
-}
+//func (*ArticleFirst) TableName() string {
+//	return ""
+//}
 
-func (a *Article) ConvertArticleEntityToDto() *dto.Article {
-	return &dto.Article{
-		Key:       a.Key,
-		ArticleID: a.ArticleID,
-		Abstract:  a.Abstract,
-		Summary:   a.Summary,
+func (a *Article) ConvertArticleEntityToDtoFirst() *dto.ArticleFirst {
+	return &dto.ArticleFirst{
+		Abstract: a.Abstract,
+		Summary:  a.Summary,
 	}
 }
 
-func ConvertArticleDtoToEntity(article *dto.Article) *Article {
+func (a *Article) ConvertArticleEntityToDtoSecond() *dto.ArticleSecond {
+	return &dto.ArticleSecond{
+		Abstract: a.Abstract,
+		Summary:  a.Summary,
+	}
+}
+
+func ConvertArticleDtoToEntity(article *dto.ArticleFirst) *Article {
 	return &Article{
-		Key:       article.Key,
-		ArticleID: article.ArticleID,
-		Abstract:  article.Abstract,
-		Summary:   article.Summary,
+		Key:      article.Key,
+		Abstract: article.Abstract,
+		Summary:  article.Summary,
 	}
 }

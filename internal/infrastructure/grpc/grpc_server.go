@@ -3,8 +3,8 @@ package grpc
 import (
 	"gorm.io/gorm"
 	"net"
+	pb "siwuai/proto/article"
 	pbcode "siwuai/proto/code"
-	pbuser "siwuai/proto/user"
 
 	"google.golang.org/grpc"
 	server "siwuai/internal/server/grpc"
@@ -18,11 +18,11 @@ func RunGRPCServer(port string, db *gorm.DB) error {
 	}
 	grpcServer := grpc.NewServer()
 
-	// 注册 UserService
-	pbuser.RegisterUserServiceServer(grpcServer, server.NewUserGRPCHandler(db))
-
 	// 注册 CodeService
 	pbcode.RegisterCodeServiceServer(grpcServer, server.NewCodeGRPCHandler(db))
+
+	// 注册 ArticleService
+	pb.RegisterArticleServiceServer(grpcServer, server.NewArticleGRPCHandler(db))
 
 	return grpcServer.Serve(lis)
 }

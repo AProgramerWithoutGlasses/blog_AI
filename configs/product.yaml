@@ -1,0 +1,10 @@
+server:
+  port: "50051"
+
+mysql:
+  host: "192.168.10.4"
+  port: 3310
+  username: "root"
+  password: "123456"
+  dbname: "siwuai"
+  parseTime: true

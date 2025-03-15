@@ -23,7 +23,7 @@ type Config struct {
 
 // LoadConfig 加载并解析配置文件
 func LoadConfig(path string) (config Config, err error) {
-	viper.SetConfigName("config")
+	viper.SetConfigName("local")
 	viper.AddConfigPath(path)
 	viper.SetConfigType("yaml")
 
