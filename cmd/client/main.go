@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"siwuai/internal/infrastructure/config"
+	"siwuai/internal/infrastructure/etcd"
 	pb "siwuai/proto/article"
+	pbcode "siwuai/proto/code"
 	"time"
 
 	"google.golang.org/grpc"
-
 )
 
 //// 用于模拟客户端通过gRPC调用LLM服务
@@ -42,7 +44,7 @@ import (
 
 func main() {
 	// 加载配置文件
-	cfg, err := config.LoadConfig(".")
+	cfg, err := config.LoadConfig("configs")
 	if err != nil {
 		log.Fatalf("加载配置文件失败: %v", err)
 	}
@@ -74,7 +76,7 @@ func main() {
 	defer conn.Close()
 
 	// 设置请求上下文和超时
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 	client1 := pb.NewArticleServiceClient(conn)
 
@@ -123,11 +125,20 @@ func main() {
 		fmt.Printf("++++++++++++++++++> \n %v", resp1)
 	}
 
-	resp2, err := client1.ExplainCode(ctx, req1)
+	// code ------------------------------------------
+	client2 := pbcode.NewCodeServiceClient(conn)
+
+	req2 := &pbcode.CodeRequest{
+		CodeQuestion: "你是谁创造的",
+		UserId:       2,
+		CodeType:     "go",
+	}
+
+	resp2, err := client2.ExplainCode(ctx, req2)
 	if err != nil {
 		fmt.Println("client1.ExplainCode()", err)
 	}
 
-	fmt.Println("resp1:", resp1)
+	fmt.Println("resp2:", resp2)
 
 }

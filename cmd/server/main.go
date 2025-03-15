@@ -7,15 +7,15 @@ import (
 	"os/signal"
 	"syscall"
 
-	mysqlInfra "siwuai/internal/infrastructure/persistence"
 	"siwuai/internal/infrastructure/config"
 	"siwuai/internal/infrastructure/etcd"
 	"siwuai/internal/infrastructure/grpc"
+	mysqlInfra "siwuai/internal/infrastructure/persistence"
 )
 
 func main() {
 	// 加载配置文件
-	cfg, err := config.LoadConfig(".")
+	cfg, err := config.LoadConfig("configs")
 	if err != nil {
 		log.Fatalf("加载配置文件失败: %v", err)
 	}

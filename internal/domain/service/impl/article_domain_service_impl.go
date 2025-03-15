@@ -1,4 +1,4 @@
-package service
+package impl
 
 import (
 	"fmt"
@@ -6,8 +6,8 @@ import (
 	"siwuai/internal/domain/model/dto"
 	"siwuai/internal/domain/model/entity"
 	"siwuai/internal/domain/service"
-	"siwuai/internal/infrastructure/code_infrastructure"
 	"siwuai/internal/infrastructure/persistence"
+	"siwuai/internal/infrastructure/utils"
 	"strings"
 )
 
@@ -31,7 +31,7 @@ func (a *articleDomainService) VerifyHash(key string) (*dto.ArticleFirst, error)
 }
 
 func (a *articleDomainService) AskAI(key string, content string) (*dto.ArticleFirst, error) {
-	answer, err := code_infrastructure.Generate(content)
+	answer, err := utils.Generate(content)
 	if err != nil {
 		return nil, fmt.Errorf("(a *articleDomainService) VerifyHash -> %v", err)
 	}
