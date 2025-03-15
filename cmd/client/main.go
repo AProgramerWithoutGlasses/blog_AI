@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"grpc-ddd-demo/internal/infrastructure/config"
+	"grpc-ddd-demo/internal/infrastructure/etcd"
 	pbcode "grpc-ddd-demo/proto/code"
 	"log"
 	"time"
@@ -14,8 +16,33 @@ import (
 
 // 用于模拟客户端通过gRPC调用LLM服务
 func main() {
+	// 加载配置文件
+	cfg, err := config.LoadConfig(".")
+	if err != nil {
+		log.Fatalf("加载配置文件失败: %v", err)
+	}
+
+	// etcd 注册初始化，使用配置文件中的 etcd 配置
+	etcdCfg := cfg.Etcd
+	registry, err := etcd.NewEtcdRegistry(etcdCfg.Endpoints, etcdCfg.ServiceName, etcdCfg.ServiceAddr, etcdCfg.TTL)
+	if err != nil {
+		log.Fatalf("创建 etcd 注册器失败: %v", err)
+	}
+
+	// 服务发现
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	addrs, err := registry.Discover(ctx, cfg.Etcd.ServiceName)
+	if err != nil {
+		log.Fatalf("服务发现失败: %v", err)
+	}
+	if len(addrs) == 0 {
+		log.Fatalf("未找到可用的服务实例")
+	}
+
 	// 连接到 gRPC 服务器（假设运行在 localhost:50051）
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	conn, err := grpc.Dial(addrs[0], grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("无法连接到服务器: %v", err)
 	}
@@ -25,7 +52,7 @@ func main() {
 	client := pbllm.NewLLMServiceClient(conn)
 
 	// 设置请求上下文和超时
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 
 	// 构造请求

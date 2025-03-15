@@ -19,6 +19,12 @@ type Config struct {
 		DBName    string `mapstructure:"dbname"`
 		ParseTime bool   `mapstructure:"parseTime"`
 	} `mapstructure:"mysql"`
+	Etcd struct {
+		Endpoints   []string `mapstructure:"endpoints"`   // etcd 集群地址列表
+		ServiceName string   `mapstructure:"serviceName"` // 服务名称，用于服务注册
+		ServiceAddr string   `mapstructure:"serviceAddr"` // 服务地址，例如 "127.0.0.1:50051"
+		TTL         int64    `mapstructure:"ttl"`         // 租约时间（秒）
+	} `mapstructure:"etcd"`
 }
 
 // LoadConfig 加载并解析配置文件

@@ -28,7 +28,6 @@ func NewMySQLDB(cfg config.Config) (db *gorm.DB, err error) {
 		fmt.Println("persistence.NewMySQLDB() gorm.Open() err: ", err)
 		return
 	}
-	fmt.Println("MySQL 连接成功")
 
 	// 表迁移
 	//err = db.AutoMigrate(&entity.Code{}, &entity.History{})
@@ -36,5 +35,8 @@ func NewMySQLDB(cfg config.Config) (db *gorm.DB, err error) {
 	//	fmt.Println("persistence.NewMySQLDB() db.AutoMigrate() err: ", err)
 	//	return
 	//}
+
+	fmt.Println("MySQL 连接成功")
+
 	return
 }

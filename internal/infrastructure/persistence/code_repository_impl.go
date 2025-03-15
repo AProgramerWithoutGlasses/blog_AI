@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"errors"
+	"fmt"
 	"gorm.io/gorm"
 	"grpc-ddd-demo/internal/domain/model/entity"
 	"grpc-ddd-demo/internal/domain/repository"
@@ -29,6 +30,9 @@ func (r *mysqlCodeRepository) GetCodeByHash(key string) (code entity.Code, ok bo
 
 func (r *mysqlCodeRepository) SaveCode(code entity.Code) (uint, error) {
 	err := r.db.Create(&code).Error
+	if err != nil {
+		fmt.Println("r.db.Create(&code) err: ", err)
+	}
 	return code.ID, err
 }
 
