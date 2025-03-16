@@ -10,6 +10,7 @@ import (
 	"siwuai/internal/infrastructure/persistence"
 	"siwuai/internal/infrastructure/redis_utils"
 	"siwuai/internal/infrastructure/utils"
+	"siwuai/pkg/globals"
 	"time"
 )
 
@@ -102,7 +103,7 @@ func (s *codeDomainService) ExplainCode(req *dto.CodeReq) (*dto.Code, error) {
 // FetchAndSave 从LLM获取数据并保存到 mysql、redis、布隆过滤器
 func (s *codeDomainService) FetchAndSave(req *dto.CodeReq, key string) (*dto.Code, error) {
 	// 从 llm 获取数据
-	explain, err := utils.Generate(req.Question)
+	explain, err := utils.Generate(globals.CodeAICode, req.Question)
 	if err != nil {
 		fmt.Println("app.ExplainCode() llm.Generate() err:", err)
 		return nil, err
@@ -111,7 +112,7 @@ func (s *codeDomainService) FetchAndSave(req *dto.CodeReq, key string) (*dto.Cod
 	// 保存到 MySQL 的 code 表
 	code := &entity.Code{
 		Key:         key,
-		Explanation: explain,
+		Explanation: explain["text"].(string),
 		Question:    req.Question,
 	}
 	code.ID, err = s.repo.SaveCode(code)

@@ -8,6 +8,7 @@ import (
 	"siwuai/internal/domain/service"
 	"siwuai/internal/infrastructure/persistence"
 	"siwuai/internal/infrastructure/utils"
+	"siwuai/pkg/globals"
 	"strings"
 )
 
@@ -30,8 +31,8 @@ func (a *articleDomainService) VerifyHash(key string) (*dto.ArticleFirst, error)
 	return articleInfo.ConvertArticleEntityToDtoFirst(), nil
 }
 
-func (a *articleDomainService) AskAI(key string, content string) (*dto.ArticleFirst, error) {
-	answer, err := utils.Generate(content)
+func (a *articleDomainService) AskAI(key string, ap *dto.ArticlePrompt) (*dto.ArticleFirst, error) {
+	answer, err := utils.Generate(globals.ArticleAICode, ap)
 	if err != nil {
 		return nil, fmt.Errorf("(a *articleDomainService) VerifyHash -> %v", err)
 	}
@@ -106,90 +107,6 @@ func (a *articleDomainService) DelArticleInfo(articleID uint) error {
 func (a *articleDomainService) ParseAnswer(answer string) *dto.ArticleFirst {
 	meta := dto.ArticleFirst{}
 
-	//// 提取摘要（### 摘要 和 --- 之间的内容）
-	//if re := regexp.MustCompile(`(?s)### 摘要\n(.*?)\n---`); re.MatchString(answer) {
-	//	fmt.Println("------------------>2 我执行了该方法")
-	//	matches := re.FindStringSubmatch(answer)
-	//	if len(matches) > 1 {
-	//		fmt.Println("------------------>3 我执行了该方法")
-	//		meta.Abstract = strings.TrimSpace(matches[1])
-	//		fmt.Println()
-	//		fmt.Println("----------------->")
-	//		fmt.Println(strings.TrimSpace(matches[1]))
-	//		fmt.Println("----------------->")
-	//		fmt.Println()
-	//		fmt.Println("+++++++++++++++++>")
-	//		fmt.Println(meta.Abstract)
-	//		fmt.Println("+++++++++++++++++>")
-	//	}
-	//}
-	//
-	//// 提取总结（### 文章总结 和 --- 之间的内容）
-	//if re := regexp.MustCompile(`(?s)### 总结\n(.*?)\n---`); re.MatchString(answer) {
-	//	matches := re.FindStringSubmatch(answer)
-	//	if len(matches) > 1 {
-	//		fmt.Println("------------------>a 我执行了该方法")
-	//		meta.Summary = strings.TrimSpace(matches[1])
-	//		fmt.Println()
-	//		fmt.Println("----------------->")
-	//		fmt.Println(strings.TrimSpace(matches[1]))
-	//		fmt.Println("----------------->")
-	//		fmt.Println()
-	//		fmt.Println("+++++++++++++++++>")
-	//		fmt.Println(meta.Summary)
-	//		fmt.Println("+++++++++++++++++>")
-	//	}
-	//}
-	//
-	//// 修复标签提取逻辑
-	//if re := regexp.MustCompile(`(?s)### 标签\n\s*([^\n]+)`); re.MatchString(answer) {
-	//	matches := re.FindStringSubmatch(answer)
-	//	if len(matches) > 1 {
-	//		fmt.Println("------------------>b 我执行了该方法")
-	//		tagLine := strings.TrimSpace(matches[1])
-	//		tagLine = strings.ReplaceAll(tagLine, "**", "") // 移除加粗符号
-	//		tags := strings.Split(tagLine, "、")             // 按中文顿号分割
-	//		meta.Tags = tags
-	//		fmt.Println()
-	//		fmt.Println("----------------->")
-	//		fmt.Println(tags)
-	//		fmt.Println("----------------->")
-	//		fmt.Println()
-	//		fmt.Println("+++++++++++++++++>")
-	//		fmt.Println(meta.Tags)
-	//		fmt.Println("+++++++++++++++++>")
-	//	}
-	//}
-	//// 提取摘要（匹配 "摘要: " 到 "总结:" 之间的内容）
-	//if re := regexp.MustCompile(`(?s)摘要:\s*(.*?)\s*总结:`); re.MatchString(answer) {
-	//	matches := re.FindStringSubmatch(answer)
-	//	if len(matches) > 1 {
-	//		fmt.Println("------------------>a 我执行了该方法")
-	//		meta.Abstract = strings.TrimSpace(matches[1])
-	//	}
-	//}
-	//
-	//// 提取总结（匹配 "总结:" 到 "标签:" 之间的内容）
-	//if re := regexp.MustCompile(`(?s)总结:\s*(.*?)\s*标签:`); re.MatchString(answer) {
-	//	matches := re.FindStringSubmatch(answer)
-	//	if len(matches) > 1 {
-	//		fmt.Println("------------------>b 我执行了该方法")
-	//		meta.Summary = strings.TrimSpace(matches[1])
-	//	}
-	//}
-	//
-	//// 提取标签（匹配 "标签: " 后的第一行内容）
-	//if re := regexp.MustCompile(`标签:\s*([^\n]+)`); re.MatchString(answer) {
-	//	matches := re.FindStringSubmatch(answer)
-	//	if len(matches) > 1 {
-	//		fmt.Println("------------------>c 我执行了该方法")
-	//		tagStr := strings.TrimSpace(matches[1])
-	//		tags := strings.Split(tagStr, "、")
-	//		meta.Tags = tags
-	//	}
-	//}
-	// 修复点1：使用中文冒号匹配
-
 	summaryRe := regexp.MustCompile(`(?s)摘要：\s*(.*?)\s*总结：`)
 	if matches := summaryRe.FindStringSubmatch(answer); len(matches) > 1 {
 		meta.Abstract = strings.TrimSpace(matches[1])
@@ -208,33 +125,6 @@ func (a *articleDomainService) ParseAnswer(answer string) *dto.ArticleFirst {
 		tags := strings.Split(tagStr, "、")
 		meta.Tags = tags
 	}
-
-	//// 提取摘要（匹配 **摘要：** 到 **总结：** 之间的内容）
-	//if re := regexp.MustCompile(`(?s)\*\*摘要：\*\*\s*(.*?)\s*\*\*总结：\*\*`); re.MatchString(answer) {
-	//	matches := re.FindStringSubmatch(answer)
-	//	if len(matches) > 1 {
-	//		meta.Abstract = strings.TrimSpace(matches[1])
-	//	}
-	//}
-	//
-	//// 提取总结（匹配 **总结：** 到 **匹配的标签：** 之间的内容）
-	//if re := regexp.MustCompile(`(?s)\*\*总结：\*\*\s*(.*?)\s*\*\*匹配的标签：\*\*`); re.MatchString(answer) {
-	//	matches := re.FindStringSubmatch(answer)
-	//	if len(matches) > 1 {
-	//		meta.Summary = strings.TrimSpace(matches[1])
-	//	}
-	//}
-	//
-	//// 提取标签（匹配 **匹配的标签：** 后的内容）
-	//if re := regexp.MustCompile(`\*\*匹配的标签：\*\*\s*([^\n]+)`); re.MatchString(answer) {
-	//	matches := re.FindStringSubmatch(answer)
-	//	if len(matches) > 1 {
-	//		// 处理英文逗号分割和空格
-	//		tagStr := strings.ReplaceAll(matches[1], " ", "") // 去除所有空格
-	//		tags := strings.Split(tagStr, ",")                // 按英文逗号分割
-	//		meta.Tags = tags
-	//	}
-	//}
 
 	return &meta
 }

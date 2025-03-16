@@ -6,7 +6,6 @@ import (
 	"log"
 	"siwuai/internal/infrastructure/config"
 	"siwuai/internal/infrastructure/etcd"
-	pbcode "siwuai/proto/code"
 	pb "siwuai/proto/article"
 	"time"
 
@@ -125,21 +124,21 @@ func main() {
 	//}
 
 	// code ------------------------------------------
-	client2 := pbcode.NewCodeServiceClient(conn)
-
-	req2 := &pbcode.CodeRequest{
-		CodeQuestion: "蛇肉好吃吗",
-		UserId:       2,
-		CodeType:     "go",
-	}
-
-	resp2, err := client2.ExplainCode(ctx, req2)
-	if err != nil {
-		fmt.Println("client2.ExplainCode() err:", err)
-		return
-	}
-
-	fmt.Println("resp2:", resp2)
+	//client2 := pbcode.NewCodeServiceClient(conn)
+	//
+	//req2 := &pbcode.CodeRequest{
+	//	CodeQuestion: "蛇肉好吃吗",
+	//	UserId:       2,
+	//	CodeType:     "go",
+	//}
+	//
+	//resp2, err := client2.ExplainCode(ctx, req2)
+	//if err != nil {
+	//	fmt.Println("client2.ExplainCode() err:", err)
+	//	return
+	//}
+	//
+	//fmt.Println("resp2:", resp2)
 	//req1 := &pb.DelArticleInfoRequest{
 	//	ArticleID: 1,
 	//}
