@@ -27,17 +27,22 @@ func (a *articleAppService) GetArticleInfoFirst(content string, tags []string) (
 	}
 
 	articleInfo, err := a.repo.VerifyHash(hashValue)
-	if err.Error() == "数据库中没有该 hash值" {
-		// 调用AI，提炼文章的摘要、总结、标签
-		articleFirst, err := a.repo.AskAI(hashValue, content)
-		if err != nil {
+	if err != nil {
+		if err.Error() == "数据库中没有该 hash值" {
+			// 封装数据
+			ap := &dto.ArticlePrompt{
+				Content: content,
+				Tags:    tags,
+			}
+			// 调用AI，提炼文章的摘要、总结、标签
+			articleFirst, err := a.repo.AskAI(hashValue, ap)
+			if err != nil {
+				return nil, fmt.Errorf("(r *ArticleRepository) GetArticleInfoFirst -> %v", err)
+			}
+			return articleFirst, nil
+		} else {
 			return nil, fmt.Errorf("(r *ArticleRepository) GetArticleInfoFirst -> %v", err)
 		}
-		articleFirst.Key = hashValue
-		return articleFirst, nil
-
-	} else if err != nil {
-		return nil, fmt.Errorf("(r *ArticleRepository) GetArticleInfoFirst -> %v", err)
 	}
 
 	// 如果hash存在，直接返回数据

@@ -7,14 +7,12 @@ type ArticleFirst struct {
 	Tags     []string `json:"tags"`     // 标签
 }
 
-// ArticleWithTag 用于存储AI的回答
-//type ArticleWithTag struct {
-//	Abstract string   // 摘要
-//	Summary  string   // 总结
-//	Tags     []string // 标签
-//}
-
 type ArticleSecond struct {
 	Abstract string `json:"abstract"` // 发布文章时，提取的文章摘要
 	Summary  string `json:"summary"`  // 发布文章时，提取的文章总结
+}
+
+type ArticlePrompt struct {
+	Content string   // 询问AI的内容
+	Tags    []string // 询问AI时提供的标签
 }

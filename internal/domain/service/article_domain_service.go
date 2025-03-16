@@ -6,7 +6,7 @@ import (
 
 type ArticleDomainServiceInterface interface {
 	VerifyHash(key string) (*dto.ArticleFirst, error)
-	AskAI(key string, content string) (*dto.ArticleFirst, error)
+	AskAI(key string, ap *dto.ArticlePrompt) (*dto.ArticleFirst, error)
 	SaveArticleID(key string, articleID uint) error
 	GetArticleInfo(articleID uint) (*dto.ArticleSecond, error)
 	DelArticleInfo(articleID uint) error
