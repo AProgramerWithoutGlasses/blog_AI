@@ -1,4 +1,4 @@
-package service
+package impl
 
 import (
 	"fmt"
@@ -6,9 +6,8 @@ import (
 	"siwuai/internal/domain/model/dto"
 	"siwuai/internal/domain/model/entity"
 	"siwuai/internal/domain/service"
-	"siwuai/internal/infrastructure/code_infrastructure"
 	"siwuai/internal/infrastructure/persistence"
-	"siwuai/pkg/globals"
+	"siwuai/internal/infrastructure/utils"
 	"strings"
 )
 
@@ -31,8 +30,8 @@ func (a *articleDomainService) VerifyHash(key string) (*dto.ArticleFirst, error)
 	return articleInfo.ConvertArticleEntityToDtoFirst(), nil
 }
 
-func (a *articleDomainService) AskAI(key string, ap *dto.ArticlePrompt) (*dto.ArticleFirst, error) {
-	answer, err := code_infrastructure.Generate(globals.ArticleAICode, ap)
+func (a *articleDomainService) AskAI(key string, content string) (*dto.ArticleFirst, error) {
+	answer, err := utils.Generate(content)
 	if err != nil {
 		return nil, fmt.Errorf("(a *articleDomainService) VerifyHash -> %v", err)
 	}
@@ -206,7 +205,6 @@ func (a *articleDomainService) ParseAnswer(answer string) *dto.ArticleFirst {
 	tagRe := regexp.MustCompile(`匹配的标签：\s*([^\n]+)`)
 	if matches := tagRe.FindStringSubmatch(answer); len(matches) > 1 {
 		tagStr := strings.ReplaceAll(matches[1], " ", "") // 移除空格
-		tagStr = strings.ReplaceAll(tagStr, "**", "")     // 移除 **
 		tags := strings.Split(tagStr, "、")
 		meta.Tags = tags
 	}

@@ -8,6 +8,7 @@ option go_package = "./code";
 message CodeRequest {
   string codeQuestion = 1;  // 用户提问的代码
   uint32 userId = 2;  // 用户的id
+  string codeType = 3;  // 代码语言
 }
 
 message CodeResponse {

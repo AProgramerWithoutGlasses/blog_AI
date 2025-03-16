@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"siwuai/internal/infrastructure/config"
+	"siwuai/internal/infrastructure/etcd"
+	pbcode "siwuai/proto/code"
 	pb "siwuai/proto/article"
 	"time"
 
@@ -40,12 +43,40 @@ import (
 //}
 
 func main() {
-	conn, err := grpc.Dial("localhost:8899", grpc.WithInsecure())
+	// 加载配置文件
+	cfg, err := config.LoadConfig("configs")
+	if err != nil {
+		log.Fatalf("加载配置文件失败: %v", err)
+	}
+
+	// etcd 注册初始化，使用配置文件中的 etcd 配置
+	etcdCfg := cfg.Etcd
+	registry, err := etcd.NewEtcdRegistry(etcdCfg.Endpoints, etcdCfg.ServiceName, etcdCfg.ServiceAddr, etcdCfg.TTL)
+	if err != nil {
+		log.Fatalf("创建 etcd 注册器失败: %v", err)
+	}
+
+	// 服务发现
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	addrs, err := registry.Discover(ctx, cfg.Etcd.ServiceName)
+	if err != nil {
+		log.Fatalf("服务发现失败: %v", err)
+	}
+	if len(addrs) == 0 {
+		log.Fatalf("未找到可用的服务实例")
+	}
+
+	// 连接到 gRPC 服务器（假设运行在 localhost:50051）
+	conn, err := grpc.Dial(addrs[0], grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("无法连接到服务器: %v", err)
 	}
+	defer conn.Close()
+
 	// 设置请求上下文和超时
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 	client1 := pb.NewArticleServiceClient(conn)
 
@@ -82,7 +113,33 @@ func main() {
 	//} else {
 	//	fmt.Printf("++++++++++++++++++> \n %v", resp1)
 	//}
+	//
+	//req1 := &pb.DelArticleInfoRequest{
+	//	ArticleID: 1,
+	//}
+	//resp1, err := client1.DelArticleInfo(ctx, req1)
+	//if err != nil {
+	//	fmt.Printf("client1.DelArticleInfo -------> \n %v \n %v", resp1, err)
+	//} else {
+	//	fmt.Printf("++++++++++++++++++> \n %v", resp1)
+	//}
 
+	// code ------------------------------------------
+	client2 := pbcode.NewCodeServiceClient(conn)
+
+	req2 := &pbcode.CodeRequest{
+		CodeQuestion: "蛇肉好吃吗",
+		UserId:       2,
+		CodeType:     "go",
+	}
+
+	resp2, err := client2.ExplainCode(ctx, req2)
+	if err != nil {
+		fmt.Println("client2.ExplainCode() err:", err)
+		return
+	}
+
+	fmt.Println("resp2:", resp2)
 	//req1 := &pb.DelArticleInfoRequest{
 	//	ArticleID: 1,
 	//}
