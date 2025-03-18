@@ -52,6 +52,7 @@ func (r *mysqlCodeRepository) GetHistory(userId string) (history []entity.Code, 
 
 	return
 }
+
 func (r *mysqlCodeRepository) SaveHistory(history entity.History) (err error) {
 	return r.db.Create(&history).Error
 

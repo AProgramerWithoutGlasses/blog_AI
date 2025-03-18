@@ -89,7 +89,19 @@ func Generate(flag globals.AICode, value interface{}) (answer map[string]any, er
 			"tags":    strings.Join(a.Tags, "、"), // 将标签列表转换为字符串
 		}
 	} else if flag == globals.CodeAICode {
-
+		// 代码解释功能
+		cp := value.(*dto.CodeReq)
+		// 定义代码解释的提示词模板
+		promptTemplate = prompts.NewChatPromptTemplate([]prompts.MessageFormatter{
+			// 设置系统消息，确定助手身份
+			prompts.NewSystemMessagePromptTemplate("你是一个专业的代码解释助手", []string{}),
+			// 设置用户消息，要求生成一段不超过300字的代码解释，且格式为一段话
+			prompts.NewHumanMessagePromptTemplate("请根据以下{{.language}}代码生成解释，要求解释内容为一段话，字数在300字以内，代码如下：\n{{.code}}", []string{"language", "code"}),
+		})
+		input = map[string]any{
+			"language": cp.CodeType,
+			"code":     cp.Question,
+		}
 	} else {
 		return nil, fmt.Errorf("flag的值超出范围")
 	}

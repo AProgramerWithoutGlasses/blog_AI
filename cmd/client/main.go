@@ -7,6 +7,7 @@ import (
 	"siwuai/internal/infrastructure/config"
 	"siwuai/internal/infrastructure/etcd"
 	pb "siwuai/proto/article"
+	pbcode "siwuai/proto/code"
 	"time"
 
 	"google.golang.org/grpc"
@@ -88,7 +89,7 @@ func main() {
 	if err != nil {
 		fmt.Printf("client1.GetArticleInfoFirst -------> \n %v \n %v", resp1, err)
 	} else {
-		fmt.Printf("++++++++++++++++++> \n %v", resp1)
+		fmt.Printf("++++++++++++++++++> \n %v\n", resp1)
 	}
 
 	//req1 := &pb.SaveArticleIDRequest{
@@ -124,21 +125,21 @@ func main() {
 	//}
 
 	// code ------------------------------------------
-	//client2 := pbcode.NewCodeServiceClient(conn)
-	//
-	//req2 := &pbcode.CodeRequest{
-	//	CodeQuestion: "蛇肉好吃吗",
-	//	UserId:       2,
-	//	CodeType:     "go",
-	//}
-	//
-	//resp2, err := client2.ExplainCode(ctx, req2)
-	//if err != nil {
-	//	fmt.Println("client2.ExplainCode() err:", err)
-	//	return
-	//}
-	//
-	//fmt.Println("resp2:", resp2)
+	client2 := pbcode.NewCodeServiceClient(conn)
+
+	req2 := &pbcode.CodeRequest{
+		CodeQuestion: "\nfunc main() {\n\tvar wg sync.WaitGroup\n\n\t// 需要等待2个协程完成\n\twg.Add(2)\n\n\t// 使用channel来控制输出顺序\n\tnumCh := make(chan bool, 1)\n\tletterCh := make(chan bool, 1)\n\n\t// 启动数字输出协程\n\tgo func() {\n\t\t// 通知waitGroup 一个协程已经完成\n\t\tdefer wg.Done()\n\t\tdefer close(letterCh)\n\n\t\tfor i := 1; i <= 10; i++ {\n\t\t\t<-numCh\n\t\t\tfmt.Printf(\"%d \", i)\n\t\t\tletterCh <- true\n\t\t}\n\t}()\n\n\t// 启动字母输出协程\n\tgo func() {\n\t\t// 通知waitGroup 一个协程已经完成\n\t\tdefer wg.Done()\n\t\tdefer close(numCh)\n\n\t\tfor c := 'A'; c <= 'J'; c++ {\n\t\t\t<-letterCh\n\t\t\tfmt.Printf(\"%c \", c)\n\t\t\tnumCh <- true\n\t\t}\n\t}()\n\n\t// 启动输出\n\tnumCh <- true\n\n\t// 等待两个协程完成\n\twg.Wait()\n}\n// 启动 TCP 服务器\n    listener, err := net.Listen(\"tcp\", \":8080\")\n    if err != nil {\n        fmt.Println(\"Error starting server:\", err)\n        return\n    }\n    defer listener.Close()\n \n    fmt.Println(\"Server is listening on port 8080\")\n \n    for {\n        conn, err := listener.Accept()\n        if err != nil {\n            fmt.Println(\"Error accepting connection:\", err)\n            continue\n        }\n        go handleConnection(conn)\n    }\n}\n \nfunc handleConnection(conn net.Conn) {\n    defer conn.Close()\n    buffer := make([]byte, 1024)\n \n    for {\n        // 读取数据\n        n, err := conn.Read(buffer)\n        if err != nil {\n            fmt.Println(\"Connection closed:\", err)\n            return\n        }\n        fmt.Println(\"Received:\", string(buffer[:n]))\n \n        // 响应心跳消息\n        if string(buffer[:n]) == \"pong\" {\n            conn.Write([]byte(\"pong\"))\n        }\n    }\n}",
+		UserId:       3,
+		CodeType:     "golang",
+	}
+
+	resp2, err := client2.ExplainCode(ctx, req2)
+	if err != nil {
+		fmt.Println("client2.ExplainCode() err:", err)
+		return
+	}
+
+	fmt.Println("resp2:", resp2)
 	//req1 := &pb.DelArticleInfoRequest{
 	//	ArticleID: 1,
 	//}

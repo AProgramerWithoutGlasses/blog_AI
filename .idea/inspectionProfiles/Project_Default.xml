@@ -6,5 +6,6 @@
         <method importPath="grpc-ddd-demo/internal/app/codecase" receiver="CodeUseCase" name="ExplainCode" />
       </methods>
     </inspection_tool>
+    <inspection_tool class="GoDirectComparisonOfErrors" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
   </profile>
 </component>

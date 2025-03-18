@@ -30,6 +30,10 @@ type Config struct {
 		DB       int    `mapstructure:"db"`       // Redis 数据库编号
 		Timeout  int    `mapstructure:"timeout"`  // 操作超时时间（秒）
 	} `mapstructure:"redis"`
+	Token struct {
+		SecretKey        string `mapstructure:"secretKey"`        // token验证密钥
+		GenerateTokenKey string `mapstructure:"generateTokenKey"` // token生成密钥
+	} `mapstructure:"token"`
 }
 
 // LoadConfig 加载并解析配置文件

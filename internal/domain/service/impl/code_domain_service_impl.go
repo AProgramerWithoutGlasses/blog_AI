@@ -103,7 +103,7 @@ func (s *codeDomainService) ExplainCode(req *dto.CodeReq) (*dto.Code, error) {
 // FetchAndSave 从LLM获取数据并保存到 mysql、redis、布隆过滤器
 func (s *codeDomainService) FetchAndSave(req *dto.CodeReq, key string) (*dto.Code, error) {
 	// 从 llm 获取数据
-	explain, err := utils.Generate(globals.CodeAICode, req.Question)
+	explain, err := utils.Generate(globals.CodeAICode, req)
 	if err != nil {
 		fmt.Println("app.ExplainCode() llm.Generate() err:", err)
 		return nil, err

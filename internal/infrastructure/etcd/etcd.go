@@ -43,7 +43,7 @@ func (r *EtcdRegistry) Register(ctx context.Context) error {
 	}
 	r.leaseID = leaseResp.ID
 
-	key := fmt.Sprintf("/%s/%s", r.serviceName, r.serviceAddr)
+	key := fmt.Sprintf("/%s", r.serviceName)
 	_, err = r.client.Put(ctx, key, r.serviceAddr, clientv3.WithLease(r.leaseID))
 	if err != nil {
 		return err

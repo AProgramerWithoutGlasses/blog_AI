@@ -5,6 +5,7 @@ go 1.23.6
 require (
 	github.com/bits-and-blooms/bloom/v3 v3.7.0
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/spf13/viper v1.19.0
 	github.com/tmc/langchaingo v0.1.13
 	go.etcd.io/etcd/client/v3 v3.5.12
