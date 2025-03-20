@@ -11,4 +11,5 @@ type Code struct {
 	Key         string
 	Question    string
 	Explanation string
+	Stream      chan string `json:"-"`
 }

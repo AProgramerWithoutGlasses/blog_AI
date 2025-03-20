@@ -34,6 +34,10 @@ type Config struct {
 		LogPath string `mapstructure:"logPath"` // 日志输出文件
 		AppName string `mapstructure:"appName"` // 项目名称
 	}
+	Token struct {
+		SecretKey        string `mapstructure:"secretKey"`        // token验证密钥
+		GenerateTokenKey string `mapstructure:"generateTokenKey"` // token生成密钥
+	} `mapstructure:"token"`
 }
 
 // LoadConfig 加载并解析配置文件

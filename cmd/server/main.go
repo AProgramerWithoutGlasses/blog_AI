@@ -85,7 +85,7 @@ func main() {
 	// 启动 gRPC 服务，使用配置文件中指定的端口（例如：cfg.Server.Port）
 	port := cfg.Server.Port
 	log.Printf("gRPC 服务器启动在端口 %s...", port)
-	if err = grpc.RunGRPCServer(port, db, redisClient, bf); err != nil {
+	if err = grpc.RunGRPCServer(port, db, redisClient, bf, cfg); err != nil {
 		log.Fatalf("启动 gRPC 服务器失败: %v", err)
 	}
 }

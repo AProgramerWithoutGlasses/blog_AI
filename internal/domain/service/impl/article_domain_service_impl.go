@@ -34,11 +34,12 @@ func (a *articleDomainService) VerifyHash(key string) (*dto.ArticleFirst, error)
 func (a *articleDomainService) AskAI(key string, ap *dto.ArticlePrompt) (*dto.ArticleFirst, error) {
 	answer, err := utils.Generate(globals.ArticleAICode, ap)
 	if err != nil {
+		fmt.Println("utils.Generate() err: ", err)
 		return nil, fmt.Errorf("(a *articleDomainService) VerifyHash -> %v", err)
 	}
 
 	// 提取数据
-	articleFirst := a.ParseAnswer(answer["text"].(string))
+	articleFirst := a.ParseAnswer(answer)
 	//articleFirst := a.ParseAnswer(answer)
 	articleFirst.Key = key
 
