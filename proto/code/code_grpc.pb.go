@@ -25,10 +25,8 @@ const (
 // CodeServiceClient is the client API for CodeService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// 定义代码解释服务
 type CodeServiceClient interface {
-	ExplainCode(ctx context.Context, in *CodeRequest, opts ...grpc.CallOption) (*CodeResponse, error)
+	ExplainCode(ctx context.Context, in *CodeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CodeResponse], error)
 }
 
 type codeServiceClient struct {
@@ -39,23 +37,30 @@ func NewCodeServiceClient(cc grpc.ClientConnInterface) CodeServiceClient {
 	return &codeServiceClient{cc}
 }
 
-func (c *codeServiceClient) ExplainCode(ctx context.Context, in *CodeRequest, opts ...grpc.CallOption) (*CodeResponse, error) {
+func (c *codeServiceClient) ExplainCode(ctx context.Context, in *CodeRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CodeResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CodeResponse)
-	err := c.cc.Invoke(ctx, CodeService_ExplainCode_FullMethodName, in, out, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &CodeService_ServiceDesc.Streams[0], CodeService_ExplainCode_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &grpc.GenericClientStream[CodeRequest, CodeResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
 }
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type CodeService_ExplainCodeClient = grpc.ServerStreamingClient[CodeResponse]
 
 // CodeServiceServer is the server API for CodeService service.
 // All implementations must embed UnimplementedCodeServiceServer
 // for forward compatibility.
-//
-// 定义代码解释服务
 type CodeServiceServer interface {
-	ExplainCode(context.Context, *CodeRequest) (*CodeResponse, error)
+	ExplainCode(*CodeRequest, grpc.ServerStreamingServer[CodeResponse]) error
 	mustEmbedUnimplementedCodeServiceServer()
 }
 
@@ -66,8 +71,8 @@ type CodeServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedCodeServiceServer struct{}
 
-func (UnimplementedCodeServiceServer) ExplainCode(context.Context, *CodeRequest) (*CodeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ExplainCode not implemented")
+func (UnimplementedCodeServiceServer) ExplainCode(*CodeRequest, grpc.ServerStreamingServer[CodeResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method ExplainCode not implemented")
 }
 func (UnimplementedCodeServiceServer) mustEmbedUnimplementedCodeServiceServer() {}
 func (UnimplementedCodeServiceServer) testEmbeddedByValue()                     {}
@@ -90,23 +95,16 @@ func RegisterCodeServiceServer(s grpc.ServiceRegistrar, srv CodeServiceServer) {
 	s.RegisterService(&CodeService_ServiceDesc, srv)
 }
 
-func _CodeService_ExplainCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CodeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+func _CodeService_ExplainCode_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(CodeRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(CodeServiceServer).ExplainCode(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: CodeService_ExplainCode_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CodeServiceServer).ExplainCode(ctx, req.(*CodeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(CodeServiceServer).ExplainCode(m, &grpc.GenericServerStream[CodeRequest, CodeResponse]{ServerStream: stream})
 }
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type CodeService_ExplainCodeServer = grpc.ServerStreamingServer[CodeResponse]
 
 // CodeService_ServiceDesc is the grpc.ServiceDesc for CodeService service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -114,12 +112,13 @@ func _CodeService_ExplainCode_Handler(srv interface{}, ctx context.Context, dec 
 var CodeService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "code.CodeService",
 	HandlerType: (*CodeServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "ExplainCode",
-			Handler:    _CodeService_ExplainCode_Handler,
+			StreamName:    "ExplainCode",
+			Handler:       _CodeService_ExplainCode_Handler,
+			ServerStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "code.proto",
 }

@@ -20,6 +20,7 @@ func NewMySQLCodeRepository(db *gorm.DB) persistence.CodeRepository {
 func (r *mysqlCodeRepository) GetCodeByHash(key string) (code entity.Code, ok bool, err error) {
 	err = r.db.Where("`key` = ?", key).First(&code).Error
 	if err != nil {
+		fmt.Println("该错误已手动忽略:  r.db.Where().First(&code) err: ")
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			err = nil
 		}
@@ -28,12 +29,17 @@ func (r *mysqlCodeRepository) GetCodeByHash(key string) (code entity.Code, ok bo
 	return code, true, err
 }
 
-func (r *mysqlCodeRepository) SaveCode(code *entity.Code) (uint, error) {
-	err := r.db.Create(&code).Error
+func (r *mysqlCodeRepository) SaveCode(code *entity.Code) (codeId uint, err error) {
+	err = r.db.Create(&code).Error
 	if err != nil {
 		fmt.Println("r.db.Create(&code) err: ", err)
+		return
 	}
-	return code.ID, err
+
+	codeId = code.ID
+	fmt.Println("成功将记录保存到mysql: ", code.Key)
+
+	return
 }
 
 // GetHistory 根据history表中某个userid的后10条记录中的codeId去查询Code表中信息
@@ -54,6 +60,9 @@ func (r *mysqlCodeRepository) GetHistory(userId string) (history []entity.Code, 
 }
 
 func (r *mysqlCodeRepository) SaveHistory(history entity.History) (err error) {
-	return r.db.Create(&history).Error
-
+	err = r.db.Create(&history).Error
+	if err != nil {
+		fmt.Println("r.db.Create() err: ", err)
+	}
+	return
 }

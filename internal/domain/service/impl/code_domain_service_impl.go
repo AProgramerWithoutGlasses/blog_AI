@@ -3,6 +3,8 @@ package impl
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/bits-and-blooms/bloom/v3"
 	"siwuai/internal/domain/model/dto"
 	"siwuai/internal/domain/model/entity"
@@ -11,7 +13,6 @@ import (
 	"siwuai/internal/infrastructure/redis_utils"
 	"siwuai/internal/infrastructure/utils"
 	"siwuai/pkg/globals"
-	"time"
 )
 
 type codeDomainService struct {
@@ -28,116 +29,149 @@ func NewCodeDomainService(repo persistence.CodeRepository, redisClient *redis_ut
 	}
 }
 
-func (s *codeDomainService) ExplainCode(req *dto.CodeReq) (*dto.Code, error) {
-	key, err := utils.Hash(req.Question)
+func (s *codeDomainService) ExplainCode(req *dto.CodeReq) (code *dto.Code, err error) {
+	// 得到代码解释信息
+	code, err = s.GetAnswer(req)
 	if err != nil {
-		fmt.Println("app.ExplainCode() unique.Hash() err:", err)
-		return nil, err
+		fmt.Println("s.GetAnswer() ", err)
+		return
 	}
 
-	var code *dto.Code
+	// 记录 history
+	err = s.repo.SaveHistory(entity.History{UserID: req.UserId, CodeID: code.ID})
+	if err != nil {
+		fmt.Println("s.repo.SaveHistory() ", err)
+		return
+	}
+
+	return
+}
+
+// GetAnswer 用于得到代码解释信息
+func (s *codeDomainService) GetAnswer(req *dto.CodeReq) (code *dto.Code, err error) {
+	// 获取问题的hash值
+	key, err := utils.Hash(req.Question)
+	if err != nil {
+		fmt.Println("utils.Hash() ", err)
+		return
+	}
 
 	// 1. 检查布隆过滤器
 	if !s.bf.Test([]byte(key)) {
 		// 若未命中布隆过滤器
+		fmt.Println("未命中布隆过滤器", key)
+
+		// 则调用llm生成新答复，并保存记录。
 		code, err = s.FetchAndSave(req, key)
 		if err != nil {
-			return nil, err
+			fmt.Println("s.FetchAndSave() ", err)
+			return
 		}
-		// 记录 history
-		err = s.repo.SaveHistory(entity.History{UserID: req.UserId, CodeID: code.ID})
-		if err != nil {
-			fmt.Println("保存 history 失败:", err)
-		}
-		return code, nil
+
+		return
 	}
 
 	// 2. 检查 Redis 缓存
-	if data, err := s.redisClient.Get(key); err == nil && data != "" {
-		code = &dto.Code{}
-		if err := json.Unmarshal([]byte(data), code); err != nil {
-			fmt.Println("JSON 反序列化失败:", err)
-			return nil, err
-		} else {
-			// 记录 history
-			err = s.repo.SaveHistory(entity.History{UserID: req.UserId, CodeID: code.ID})
-			if err != nil {
-				fmt.Println("保存 history 失败:", err)
-				return nil, err
-			}
-			return code, nil
+	data, err := s.redisClient.Get(key)
+	if err == nil && data != "" {
+		// 若成功命中缓存
+		code = &dto.Code{} // 初始化指针，防止空指针异常
+
+		// 将命中结果反序列化到code并返回
+		if err = json.Unmarshal([]byte(data), code); err != nil {
+			fmt.Println("json.Unmarshal() err: ", err)
+			return
 		}
+		return
 	}
 
-	// 3. 查询 MySQL
+	// 3. 检查 MySQL 记录
 	entityCode, ok, err := s.repo.GetCodeByHash(key)
 	if err != nil {
-		fmt.Println("app.ExplainCode() repo.GetCodeByHash() err:", err)
-		return nil, err
+		fmt.Println("repo.GetCodeByHash() ", err)
+		return
 	}
+	// 若成功命中记录
 	if ok {
-		// 保存到 redis
+		// 结构体转换
 		code = entityCode.CodeToDto()
-		s.SaveToRedis(key, code)
-		// 记录 history
-		err = s.repo.SaveHistory(entity.History{UserID: req.UserId, CodeID: code.ID})
+
+		// 同步到redis, 保证数据一致性
+		err = s.SaveToRedis(key, code)
 		if err != nil {
-			fmt.Println("保存 history 失败:", err)
+			fmt.Println("s.SaveToRedis() ", err)
+			return
 		}
-		return code, nil
+		return
 	}
 
-	// 4. MySQL 中没有，调用 API 并保存
+	// 调用llm生成新答复，并保存记录。
 	code, err = s.FetchAndSave(req, key)
 	if err != nil {
-		return nil, err
+		fmt.Println("s.FetchAndSave() ", err)
+		return
 	}
-	// 记录 history
-	err = s.repo.SaveHistory(entity.History{UserID: req.UserId, CodeID: code.ID})
-	if err != nil {
-		fmt.Println("保存 history 失败:", err)
-	}
-	return code, nil
+
+	return
 }
 
-// FetchAndSave 从LLM获取数据并保存到 mysql、redis、布隆过滤器
+// FetchAndSave 从 LLM 获取数据并保存到 MySQL、Redis、布隆过滤器
 func (s *codeDomainService) FetchAndSave(req *dto.CodeReq, key string) (*dto.Code, error) {
-	// 从 llm 获取数据
-	explain, err := utils.Generate(globals.CodeAICode, req)
+	// 从 LLM 获取数据
+	explain, stream, err := utils.GenerateStream(globals.CodeAICode, req)
 	if err != nil {
-		fmt.Println("app.ExplainCode() llm.Generate() err:", err)
+		fmt.Println("utils.Generate() err: ", err)
 		return nil, err
 	}
 
-	// 保存到 MySQL 的 code 表
+	fmt.Println("explanation:", explain)
+	fmt.Println("stream:", stream)
+
+	// 构造dtoCode
 	code := &entity.Code{
 		Key:         key,
-		Explanation: explain["text"].(string),
+		Explanation: explain,
 		Question:    req.Question,
 	}
+	dtoCode := code.CodeToDto()
+
+	// 保存到 MySQL 的 code 表
 	code.ID, err = s.repo.SaveCode(code)
 	if err != nil {
-		fmt.Println("app ExplainCode() repo.SaveCode() err:", err)
+		fmt.Println("s.repo.SaveCode() ", err)
 		return nil, err
 	}
 
-	// 保存到 Redis
-	dtoCode := code.CodeToDto()
-	s.SaveToRedis(key, dtoCode)
+	// 缓存到 Redis
+	err = s.SaveToRedis(key, dtoCode)
+	if err != nil {
+		fmt.Println("s.repo.SaveToRedis() ", err)
+		return nil, err
+	}
 
-	// 添加到布隆过滤器
+	// 缓存到布隆过滤器
 	s.bf.Add([]byte(key))
+	fmt.Println("成功将记录缓存到布隆过滤器:", []byte(key))
+
+	// 最后绑定stream，防止存入mysql、redis中
+	dtoCode.Stream = stream
 
 	return dtoCode, nil
 }
 
-func (s *codeDomainService) SaveToRedis(key string, code *dto.Code) {
+func (s *codeDomainService) SaveToRedis(key string, code *dto.Code) (err error) {
 	data, err := json.Marshal(code)
 	if err != nil {
-		fmt.Println("JSON 序列化失败:", err)
+		fmt.Println("json.Marshal() err: ", err)
 		return
 	}
-	if err := s.redisClient.Set(key, string(data), 24*time.Hour); err != nil {
-		fmt.Println("保存到 Redis 失败:", err)
+
+	if err = s.redisClient.Set(key, string(data), 24*time.Hour); err != nil { // todo redis的有效期
+		fmt.Println("s.redisClient.Set() err: ", err)
+		return
 	}
+
+	fmt.Printf("成功将记录缓存到redis: %s —— %s\n", key, code.Explanation)
+
+	return
 }

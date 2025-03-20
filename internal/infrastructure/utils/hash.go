@@ -7,15 +7,16 @@ import (
 	"io"
 )
 
-func Hash(key string) (hashVal string, err error) {
+// Hash 用于计算问题的hash值
+func Hash(question string) (hashVal string, err error) {
 	hasher := sha256.New()
-	_, err = io.WriteString(hasher, key)
+	_, err = io.WriteString(hasher, question)
 	if err != nil {
-		fmt.Println("hash.hash() io.WriteString() err:", err)
+		fmt.Println("io.WriteString(hasher, question) err: ", err)
 		return
 	}
 	// 使用 hex.EncodeToString 将二进制哈希结果转换为十六进制字符串
 	hashVal = hex.EncodeToString(hasher.Sum(nil))
-	fmt.Printf("SHA-256 Hash: %s\n", hashVal)
+	fmt.Printf("%s 的Hash值为: %s\n", question, hashVal)
 	return
 }

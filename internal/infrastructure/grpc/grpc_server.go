@@ -28,6 +28,7 @@ func RunGRPCServer(port string, db *gorm.DB, rdb *redis_utils.RedisClient, bf *b
 	// 注册 ArticleService
 	pb.RegisterArticleServiceServer(grpcServer, server.NewArticleGRPCHandler(db))
 
+	// 注册 TokenService
 	pbtoken.RegisterTokenServiceServer(grpcServer, server.NewTokenGRPCHandler(cfg))
 
 	return grpcServer.Serve(lis)
