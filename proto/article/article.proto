@@ -22,8 +22,8 @@ message GetArticleInfoFirstRequest {
 
 message GetArticleInfoFirstResponse {
   string Key = 1; // hash值
-  string summary = 2; // 文章的摘要
-  string abstract = 3; // 文章的总结
+  string abstract = 3; // 文章的摘要
+  string summary = 2; // 文章的总结
   repeated string tags = 4; // 与文章相匹配的标签
 }
 

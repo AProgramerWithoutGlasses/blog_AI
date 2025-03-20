@@ -30,6 +30,10 @@ type Config struct {
 		DB       int    `mapstructure:"db"`       // Redis 数据库编号
 		Timeout  int    `mapstructure:"timeout"`  // 操作超时时间（秒）
 	} `mapstructure:"redis"`
+	Logger struct {
+		LogPath string `mapstructure:"logPath"` // 日志输出文件
+		AppName string `mapstructure:"appName"` // 项目名称
+	}
 }
 
 // LoadConfig 加载并解析配置文件

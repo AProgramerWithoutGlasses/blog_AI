@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"siwuai/internal/infrastructure/redis_utils"
 	"siwuai/internal/infrastructure/utils"
+	"siwuai/pkg/loggers"
 	"syscall"
 
 	"siwuai/internal/infrastructure/config"
@@ -24,17 +25,21 @@ func main() {
 		return
 	}
 
+	// 初始化日志
+	logger := loggers.LogInit(cfg)
+
 	// 封装 MySQL 初始化
 	db, err := mysqlInfra.NewMySQLDB(cfg)
 	if err != nil {
-		log.Fatalf("初始化 MySQL 失败: %v", err)
+		//log.Fatalf("初始化 MySQL 失败: %v", err)
+		logger.Fatalf("初始化 MySQL 失败: %v", err)
 		return
 	}
 
 	// 初始化 Redis
 	redisClient, err := redis_utils.NewRedisClient(cfg)
 	if err != nil {
-		log.Fatalf("初始化 Redis 失败: %v", err)
+		logger.Fatalf("初始化 Redis 失败: %v", err)
 		return
 	}
 	defer redisClient.Close()
@@ -50,7 +55,7 @@ func main() {
 	etcdCfg := cfg.Etcd
 	etcdRegistry, err := etcd.NewEtcdRegistry(etcdCfg.Endpoints, etcdCfg.ServiceName, etcdCfg.ServiceAddr, etcdCfg.TTL)
 	if err != nil {
-		log.Fatalf("创建 etcd 注册器失败: %v", err)
+		logger.Fatalf("创建 etcd 注册器失败: %v", err)
 	}
 
 	// 创建上下文控制 etcd 注册生命周期
@@ -59,7 +64,7 @@ func main() {
 
 	// 注册服务到 etcd
 	if err = etcdRegistry.Register(ctx); err != nil {
-		log.Fatalf("服务注册到 etcd 失败: %v", err)
+		logger.Fatalf("服务注册到 etcd 失败: %v", err)
 	}
 	log.Println("服务成功注册到 etcd")
 
