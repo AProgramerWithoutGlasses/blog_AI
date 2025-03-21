@@ -64,6 +64,7 @@ func (a *articleAppService) GetArticleInfo(articleID uint) (*dto.ArticleSecond, 
 	if err != nil {
 		return nil, err
 	}
+
 	return articleSecond, nil
 }
 

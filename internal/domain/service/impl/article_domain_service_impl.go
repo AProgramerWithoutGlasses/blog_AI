@@ -6,19 +6,21 @@ import (
 	"siwuai/internal/domain/model/dto"
 	"siwuai/internal/domain/model/entity"
 	"siwuai/internal/domain/service"
+	"siwuai/internal/infrastructure/constant"
 	"siwuai/internal/infrastructure/persistence"
 	"siwuai/internal/infrastructure/utils"
-	"siwuai/pkg/globals"
 	"strings"
 )
 
 type articleDomainService struct {
 	repo persistence.ArticleRepositoryInterface
+	sign constant.JudgingSignInterface
 }
 
-func NewArticleDomainService(repo persistence.ArticleRepositoryInterface) service.ArticleDomainServiceInterface {
+func NewArticleDomainService(repo persistence.ArticleRepositoryInterface, sign constant.JudgingSignInterface) service.ArticleDomainServiceInterface {
 	return &articleDomainService{
 		repo: repo,
+		sign: sign,
 	}
 }
 
@@ -32,30 +34,33 @@ func (a *articleDomainService) VerifyHash(key string) (*dto.ArticleFirst, error)
 }
 
 func (a *articleDomainService) AskAI(key string, ap *dto.ArticlePrompt) (*dto.ArticleFirst, error) {
-	answer, err := utils.Generate(globals.ArticleAICode, ap)
+	answer, err := utils.Generate(a.sign.GetArticleFlag(), ap)
+	//answer, stream, err := utils.GenerateStream(globals.ArticleAICode, ap)
 	if err != nil {
 		fmt.Println("utils.Generate() err: ", err)
 		return nil, fmt.Errorf("(a *articleDomainService) VerifyHash -> %v", err)
 	}
 
+	//fmt.Println("stream:", stream)
+
 	// 提取数据
-	articleFirst := a.ParseAnswer(answer)
+	articleFirst := a.ParseAnswer(answer["text"].(string))
 	//articleFirst := a.ParseAnswer(answer)
 	articleFirst.Key = key
 
-	fmt.Println()
-	fmt.Println("------------------------------------------------")
-	fmt.Printf("^^^^^^^^^^^^^^^----------> \n %v \n", articleFirst.Abstract)
-	fmt.Println("------------------------------------------------")
-	fmt.Println()
-	fmt.Println("------------------------------------------------")
-	fmt.Printf("^^^^^^^^^^^^^^^----------> \n %v \n", articleFirst.Summary)
-	fmt.Println("------------------------------------------------")
-	fmt.Println()
-	fmt.Println("------------------------------------------------")
-	fmt.Printf("^^^^^^^^^^^^^^^----------> \n %v \n", articleFirst.Tags)
-	fmt.Println("------------------------------------------------")
-	fmt.Println()
+	//fmt.Println()
+	//fmt.Println("------------------------------------------------")
+	//fmt.Printf("^^^^^^^^^^^^^^^----------> \n %v \n", articleFirst.Abstract)
+	//fmt.Println("------------------------------------------------")
+	//fmt.Println()
+	//fmt.Println("------------------------------------------------")
+	//fmt.Printf("^^^^^^^^^^^^^^^----------> \n %v \n", articleFirst.Summary)
+	//fmt.Println("------------------------------------------------")
+	//fmt.Println()
+	//fmt.Println("------------------------------------------------")
+	//fmt.Printf("^^^^^^^^^^^^^^^----------> \n %v \n", articleFirst.Tags)
+	//fmt.Println("------------------------------------------------")
+	//fmt.Println()
 
 	// 持久化数据
 	articleE := &entity.Article{

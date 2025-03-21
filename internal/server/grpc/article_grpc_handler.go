@@ -6,6 +6,7 @@ import (
 	"siwuai/internal/app"
 	impl2 "siwuai/internal/app/impl"
 	service "siwuai/internal/domain/service/impl"
+	"siwuai/internal/infrastructure/constant"
 	"siwuai/internal/infrastructure/persistence/impl"
 	pb "siwuai/proto/article"
 )
@@ -17,7 +18,8 @@ type articleGRPCHandler struct {
 
 func NewArticleGRPCHandler(db *gorm.DB) pb.ArticleServiceServer {
 	repo := impl.NewArticleRepository(db)
-	ds := service.NewArticleDomainService(repo)
+	sign := constant.NewJudgingSign()
+	ds := service.NewArticleDomainService(repo, sign)
 	as := impl2.NewArticleAppService(ds)
 	return &articleGRPCHandler{
 		repo: as,

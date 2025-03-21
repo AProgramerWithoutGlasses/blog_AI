@@ -3,6 +3,7 @@ package impl
 import (
 	"encoding/json"
 	"fmt"
+	"siwuai/internal/infrastructure/constant"
 	"time"
 
 	"github.com/bits-and-blooms/bloom/v3"
@@ -12,7 +13,6 @@ import (
 	"siwuai/internal/infrastructure/persistence"
 	"siwuai/internal/infrastructure/redis_utils"
 	"siwuai/internal/infrastructure/utils"
-	"siwuai/pkg/globals"
 )
 
 type codeDomainService struct {
@@ -118,7 +118,7 @@ func (s *codeDomainService) GetAnswer(req *dto.CodeReq) (code *dto.Code, err err
 // FetchAndSave 从 LLM 获取数据并保存到 MySQL、Redis、布隆过滤器
 func (s *codeDomainService) FetchAndSave(req *dto.CodeReq, key string) (*dto.Code, error) {
 	// 从 LLM 获取数据
-	explain, stream, err := utils.GenerateStream(globals.CodeAICode, req)
+	explain, stream, err := utils.GenerateStream(constant.CodeAICode, req)
 	if err != nil {
 		fmt.Println("utils.Generate() err: ", err)
 		return nil, err
