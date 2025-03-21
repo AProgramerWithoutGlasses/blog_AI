@@ -36,7 +36,7 @@ func (c Code) CodeToDto() *dto.Code {
 func (c Code) DtoToCode(dto *dto.Code) *Code {
 	return &Code{
 		Model: gorm.Model{
-			ID: c.ID,
+			ID: dto.ID,
 		},
 		Key:         dto.Key,
 		Question:    dto.Question,

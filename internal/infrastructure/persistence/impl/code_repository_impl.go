@@ -30,16 +30,29 @@ func (r *mysqlCodeRepository) GetCodeByHash(key string) (code entity.Code, ok bo
 }
 
 func (r *mysqlCodeRepository) SaveCode(code *entity.Code) (codeId uint, err error) {
-	err = r.db.Create(&code).Error
-	if err != nil {
-		fmt.Println("r.db.Create(&code) err: ", err)
-		return
+	// 记录调用前的 ID
+	originalID := code.ID
+
+	// 使用 FirstOrCreate，基于 Key 字段判断是否已存在
+	fmt.Println("code.id:", code.ID)
+	result := r.db.Where(entity.Code{Key: code.Key}).FirstOrCreate(code)
+	if result.Error != nil {
+		fmt.Println("r.db.FirstOrCreate() err: ", result.Error)
+		return 0, result.Error
 	}
 
 	codeId = code.ID
-	fmt.Println("成功将记录保存到mysql: ", code.Key)
+	// 判断记录是否新创建
+	if result.RowsAffected == 1 {
+		fmt.Printf("校验数据一致性: 成功将记录缓存到mysql: %s ——— %#v\n", code.Key, code)
+	} else if originalID == 0 && codeId != 0 {
+		// 如果 RowsAffected 不准确，可以用 ID 判断
+		fmt.Printf("校验数据一致性: 记录已存在于mysql: %s ——— %#v\n", code.Key, code)
+	} else {
+		fmt.Printf("校验数据一致性: 记录已存在于mysql: %s ——— %#v\n", code.Key, code)
+	}
 
-	return
+	return codeId, nil
 }
 
 // GetHistory 根据history表中某个userid的后10条记录中的codeId去查询Code表中信息

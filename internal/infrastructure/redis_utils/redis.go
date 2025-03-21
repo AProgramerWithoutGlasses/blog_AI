@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/go-redis/redis/v8"
 	"siwuai/internal/infrastructure/config"
-	"time"
 )
 
 // RedisClient 封装 Redis 客户端和配置
@@ -60,6 +61,30 @@ func (r *RedisClient) Get(key string) (string, error) {
 func (r *RedisClient) Set(key, value string, expiration time.Duration) error {
 	if err := r.client.Set(r.ctx, key, value, expiration).Err(); err != nil {
 		return fmt.Errorf("redis Set 失败: %v", err)
+	}
+	return nil
+}
+
+// TryLock 尝试获取分布式锁
+func (r *RedisClient) TryLock(key string, expiration time.Duration) (bool, error) {
+	ctx, cancel := context.WithTimeout(r.ctx, 5*time.Second) // 设置 5 秒超时
+	defer cancel()
+
+	// 使用 SETNX 尝试设置锁
+	result, err := r.client.SetNX(ctx, key, "locked", expiration).Result()
+	if err != nil {
+		return false, fmt.Errorf("redis SetNX 失败: %v", err)
+	}
+	return result, nil
+}
+
+// Unlock 释放分布式锁
+func (r *RedisClient) Unlock(key string) error {
+	ctx, cancel := context.WithTimeout(r.ctx, 5*time.Second) // 设置 5 秒超时
+	defer cancel()
+
+	if err := r.client.Del(ctx, key).Err(); err != nil {
+		return fmt.Errorf("redis Del 失败: %v", err)
 	}
 	return nil
 }
