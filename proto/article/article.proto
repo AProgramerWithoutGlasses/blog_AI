@@ -38,11 +38,19 @@ message SaveArticleIDResponse {
 
 message GetArticleInfoRequest {
   uint32 articleID = 1; // 文章ID
+  uint32 userID = 2; // 用户ID
 }
 
 message GetArticleInfoResponse {
   string summary = 1; // 文章的摘要
   string abstract = 2; // 文章的总结
+  repeated Code codes = 3;
+
+}
+
+message Code {
+  string question = 1; // 代码提问
+  string explanation = 2; // 代码解释
 }
 
 message DelArticleInfoRequest {

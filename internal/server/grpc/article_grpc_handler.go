@@ -20,7 +20,8 @@ func NewArticleGRPCHandler(db *gorm.DB) pb.ArticleServiceServer {
 	repo := impl.NewArticleRepository(db)
 	sign := constant.NewJudgingSign()
 	ds := service.NewArticleDomainService(repo, sign)
-	as := impl2.NewArticleAppService(ds)
+	cr := impl.NewMySQLCodeRepository(db)
+	as := impl2.NewArticleAppService(ds, cr)
 	return &articleGRPCHandler{
 		repo: as,
 	}
@@ -56,7 +57,7 @@ func (a *articleGRPCHandler) SaveArticleID(ctx context.Context, req *pb.SaveArti
 
 // GetArticleInfo 非首次获取文章的信息
 func (a *articleGRPCHandler) GetArticleInfo(ctx context.Context, req *pb.GetArticleInfoRequest) (*pb.GetArticleInfoResponse, error) {
-	articleSecond, err := a.repo.GetArticleInfo(uint(req.ArticleID))
+	articleSecond, codes, err := a.repo.GetArticleInfo(uint(req.ArticleID), uint(req.UserID))
 	if err != nil {
 		return nil, err
 	}
@@ -64,6 +65,15 @@ func (a *articleGRPCHandler) GetArticleInfo(ctx context.Context, req *pb.GetArti
 		Summary:  articleSecond.Summary,
 		Abstract: articleSecond.Abstract,
 	}
+
+	for _, v := range codes {
+		value := &pb.Code{
+			Question:    v.Question,
+			Explanation: v.Explanation,
+		}
+		res.Codes = append(res.Codes, value)
+	}
+
 	return res, nil
 }
 

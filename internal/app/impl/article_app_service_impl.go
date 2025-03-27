@@ -4,17 +4,22 @@ import (
 	"fmt"
 	"siwuai/internal/app"
 	"siwuai/internal/domain/model/dto"
+	"siwuai/internal/domain/model/entity"
 	"siwuai/internal/domain/service"
+	"siwuai/internal/infrastructure/persistence"
 	"siwuai/internal/infrastructure/utils"
+	"strconv"
 )
 
 type articleAppService struct {
 	repo service.ArticleDomainServiceInterface
+	code persistence.CodeRepository
 }
 
-func NewArticleAppService(repo service.ArticleDomainServiceInterface) app.ArticleAppServiceInterface {
+func NewArticleAppService(repo service.ArticleDomainServiceInterface, code persistence.CodeRepository) app.ArticleAppServiceInterface {
 	return &articleAppService{
 		repo: repo,
+		code: code,
 	}
 }
 
@@ -59,13 +64,26 @@ func (a *articleAppService) SaveArticleID(key string, articleID uint) error {
 }
 
 // GetArticleInfo 非首次获取文章的信息
-func (a *articleAppService) GetArticleInfo(articleID uint) (*dto.ArticleSecond, error) {
+func (a *articleAppService) GetArticleInfo(articleID uint, userID uint) (*dto.ArticleSecond, []entity.Code, error) {
 	articleSecond, err := a.repo.GetArticleInfo(articleID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return articleSecond, nil
+	// 代码解释
+	code, err := a.code.GetHistory(strconv.Itoa(int(userID)))
+	if err != nil {
+		return nil, nil, err
+	}
+	//for _, v := range code {
+	//	value := &dto.CodeExplanation{
+	//		Question: v.Question,
+	//		Explanation: v.Explanation,
+	//	}
+	//	articleSecond.Codes = append(articleSecond.Codes, value)
+	//}
+
+	return articleSecond, code, nil
 }
 
 // DelArticleInfo 删除文章信息

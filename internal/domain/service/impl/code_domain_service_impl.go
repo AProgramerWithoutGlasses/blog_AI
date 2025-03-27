@@ -159,13 +159,13 @@ func (s *codeDomainService) FetchAndSave(req *dto.CodeReq, key string) (*dto.Cod
 	s.bf.Add([]byte(key))
 	fmt.Println("成功将记录缓存到布隆过滤器:", []byte(key))
 
-	streamChan1, streamChan2, err := utils.GenerateStream(s.sign.GetCodeFlag(), req)
+	_, streamChan2, err := utils.GenerateStream(s.sign.GetCodeFlag(), req)
 	if err != nil {
 		fmt.Println("utils.GenerateStream() err: ", err)
 		return nil, err
 	}
 
-	dtoCode := &dto.Code{Stream: streamChan1}
+	dtoCode := &dto.Code{Stream: streamChan2}
 
 	go func() {
 		var completeResponse strings.Builder
