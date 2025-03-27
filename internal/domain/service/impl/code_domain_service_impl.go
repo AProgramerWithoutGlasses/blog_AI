@@ -17,7 +17,7 @@ import (
 )
 
 // 定义锁的过期时间
-const lockTTL = 60 * time.Second
+const lockTTL = 100 * time.Second
 
 type codeDomainService struct {
 	repo        persistence.CodeRepository
@@ -38,14 +38,14 @@ func NewCodeDomainService(repo persistence.CodeRepository, redisClient *redis_ut
 func (s *codeDomainService) ExplainCode(req *dto.CodeReq) (code *dto.Code, err error) {
 	code, err = s.GetAnswer(req)
 	if err != nil {
-		fmt.Println("s.GetAnswer() ", err)
+		err = fmt.Errorf("s.GetAnswer() %v", err)
 		return
 	}
 
 	if code.ID != 0 {
 		err = s.repo.SaveHistory(entity.History{UserID: req.UserId, CodeID: code.ID})
 		if err != nil {
-			fmt.Println("s.repo.SaveHistory() ", err)
+			err = fmt.Errorf("s.repo.SaveHistory() %v", err)
 			return
 		}
 	}
@@ -57,53 +57,62 @@ func (s *codeDomainService) ExplainCode(req *dto.CodeReq) (code *dto.Code, err e
 func (s *codeDomainService) GetAnswer(req *dto.CodeReq) (code *dto.Code, err error) {
 	key, err := utils.Hash(req.Question)
 	if err != nil {
-		fmt.Println("utils.Hash() ", err)
-		return nil, err
+		err = fmt.Errorf("utils.Hash() %v", err)
+		return
 	}
 
-	lockKey := fmt.Sprintf("lock:%s", key)
-
-	// 尝试获取锁
-	locked, err := s.redisClient.TryLock(lockKey, lockTTL)
+	// 尝试设置锁，locked为true表示设置锁成功
+	locked, err := s.redisClient.TryLock(key, lockTTL)
 	if err != nil {
-		fmt.Println("TryLock() err: ", err)
-		return nil, err
+		err = fmt.Errorf("TryLock() %v", err)
+		return
 	}
+	fmt.Println("Locked: ", locked)
 
 	if locked {
-		// 获取到锁，表示我们正在使用该锁
-		defer s.redisClient.Unlock(lockKey) // 确保释放锁
+		// 设置了锁，别的进程此时无法访问以下资源
 
+		// 1. 检查布隆过滤器
 		if !s.bf.Test([]byte(key)) {
 			fmt.Println("未命中布隆过滤器", key)
 			return s.FetchAndSave(req, key)
 		}
-
 		fmt.Println("成功命中布隆过滤器，开始查询缓存...")
 
+		// 2. 检查 Redis 缓存
 		if code, err = s.checkRedis(key); err == nil && code != nil {
+			s.redisClient.Unlock(key)
 			return code, nil
 		}
 		fmt.Printf("未命中redis缓存: %s\n", key)
 
+		// 3. 检查 MySQL 记录
 		if code, err = s.checkMySQL(key); err == nil && code != nil {
+			s.redisClient.Unlock(key)
 			return code, nil
 		}
 		fmt.Printf("未命中mysql记录: %s\n", key)
 
+		// 4. 若布隆过滤器命中，但 Redis 和 MySQL 中都未查到，则调用 LLM
 		return s.FetchAndSave(req, key)
 	} else {
 		// 未获取锁，表示该锁正在被别人占用，等待并查询缓存
-		for i := 0; i < 60; i++ {
-			time.Sleep(1 * time.Second)
+		count := 1
+		for i := 1; i < 120; i++ {
+			fmt.Printf("第%d次循环查询缓存:", count)
 			if code, err = s.checkRedis(key); err == nil && code != nil {
 				return code, nil
 			}
 			if code, err = s.checkMySQL(key); err == nil && code != nil {
 				return code, nil
 			}
+
+			time.Sleep(5 * time.Second)
+			count++
 		}
-		return nil, fmt.Errorf("等待超时，未获取到结果")
+		err = fmt.Errorf("轮询进行redis、mysql查询时错误：%v", err)
+		fmt.Println("轮询超时")
+		return nil, err
 	}
 }
 
@@ -116,7 +125,7 @@ func (s *codeDomainService) checkRedis(key string) (*dto.Code, error) {
 
 	code := &dto.Code{}
 	if err = json.Unmarshal([]byte(data), code); err != nil {
-		fmt.Println("json.Unmarshal() err: ", err)
+		err = fmt.Errorf("json.Unmarshal() err: %v", err)
 		return nil, err
 	}
 	fmt.Printf("成功命中redis缓存: %#v\n", code)
@@ -124,7 +133,8 @@ func (s *codeDomainService) checkRedis(key string) (*dto.Code, error) {
 	// 保存到 MySQL，确保一致性
 	entityCode := entity.Code{}.DtoToCode(code)
 	if _, err = s.repo.SaveCode(entityCode); err != nil {
-		fmt.Println("s.repo.SaveCode() ", err)
+
+		err = fmt.Errorf("s.repo.SaveCode() %v", err)
 		return nil, err
 	}
 
@@ -135,7 +145,7 @@ func (s *codeDomainService) checkRedis(key string) (*dto.Code, error) {
 func (s *codeDomainService) checkMySQL(key string) (*dto.Code, error) {
 	entityCode, ok, err := s.repo.GetCodeByHash(key)
 	if err != nil {
-		fmt.Println("repo.GetCodeByHash() ", err)
+		err = fmt.Errorf("repo.GetCodeByHash() %v", err)
 		return nil, err
 	}
 	if !ok {
@@ -147,7 +157,7 @@ func (s *codeDomainService) checkMySQL(key string) (*dto.Code, error) {
 
 	// 同步到 Redis，保证数据一致性
 	if err = s.SaveToRedis(key, code); err != nil {
-		fmt.Println("s.SaveToRedis() ", err)
+		err = fmt.Errorf("s.SaveToRedis() %v", err)
 		return nil, err
 	}
 
@@ -156,16 +166,13 @@ func (s *codeDomainService) checkMySQL(key string) (*dto.Code, error) {
 
 // FetchAndSave 从 LLM 获取数据并保存到 MySQL、Redis、布隆过滤器
 func (s *codeDomainService) FetchAndSave(req *dto.CodeReq, key string) (*dto.Code, error) {
-	s.bf.Add([]byte(key))
-	fmt.Println("成功将记录缓存到布隆过滤器:", []byte(key))
-
-	_, streamChan2, err := utils.GenerateStream(s.sign.GetCodeFlag(), req)
+	streamChan1, streamChan2, err := utils.GenerateStream(s.sign.GetCodeFlag(), req)
 	if err != nil {
-		fmt.Println("utils.GenerateStream() err: ", err)
+		err = fmt.Errorf("utils.GenerateStream() %v", err)
 		return nil, err
 	}
 
-	dtoCode := &dto.Code{Stream: streamChan2}
+	dtoCode := &dto.Code{Stream: streamChan1}
 
 	go func() {
 		var completeResponse strings.Builder
@@ -180,24 +187,35 @@ func (s *codeDomainService) FetchAndSave(req *dto.CodeReq, key string) (*dto.Cod
 			Question:    req.Question,
 		}
 
+		// 先添加到布隆过滤器
+		s.bf.Add([]byte(key))
+		fmt.Println("成功将记录缓存到布隆过滤器:", []byte(key))
+
 		code.ID, err = s.repo.SaveCode(code)
 		if err != nil {
-			fmt.Println("s.repo.SaveCode() err: ", err)
+			err = fmt.Errorf("s.repo.SaveCode() %v", err)
 			return
 		}
 
 		dtoCode = code.CodeToDto()
 		err = s.SaveToRedis(key, dtoCode)
 		if err != nil {
-			fmt.Println("s.SaveToRedis() err: ", err)
+			err = fmt.Errorf("s.SaveToRedis() %v", err)
 			return
 		}
 
 		err = s.repo.SaveHistory(entity.History{UserID: req.UserId, CodeID: code.ID})
 		if err != nil {
-			fmt.Println("s.repo.SaveHistory() ", err)
+			err = fmt.Errorf("s.repo.SaveHistory() %v", err)
 			return
 		}
+
+		err = s.redisClient.Unlock(key)
+		if err != nil {
+			err = fmt.Errorf("s.redisClient.Unlock() %v", err)
+			return
+		}
+
 	}()
 
 	return dtoCode, nil
@@ -206,12 +224,12 @@ func (s *codeDomainService) FetchAndSave(req *dto.CodeReq, key string) (*dto.Cod
 func (s *codeDomainService) SaveToRedis(key string, code *dto.Code) (err error) {
 	data, err := json.Marshal(code)
 	if err != nil {
-		fmt.Println("json.Marshal() err: ", err)
+		err = fmt.Errorf("json.Marshal() err: %v", err)
 		return
 	}
 
 	if err = s.redisClient.Set(key, string(data), 24*time.Hour); err != nil {
-		fmt.Println("s.redisClient.Set() err: ", err)
+		err = fmt.Errorf("s.redisClient.Set() %v", err)
 		return
 	}
 

@@ -6,5 +6,27 @@ mysql:
   port: 3310
   username: "root"
   password: "123456"
-  dbname: "siwuai"
-  parseTime: true
+  dbname: "forum"
+
+redis:
+  addr: "192.168.10.4"
+  password: "123456"
+  port: 6379
+  db: 0
+  timeout: 5
+
+etcd:
+  endpoints:
+    - "192.168.10.4:2378"
+  serviceName: "services/siwuai"
+  serviceAddr: "192.168.10.4:50051"
+  ttl: 5
+
+token:
+  secretKey: "123456"
+  generateTokenKey: "123456"
+
+log:
+  logPath: "./logs"
+  appName: "siwuai"
+  level: 1

@@ -20,7 +20,7 @@ import (
 
 func main() {
 	// 加载配置文件
-	cfg, err := config.LoadConfig("configs")
+	cfg, err := config.LoadConfig("configs", "local")
 	if err != nil {
 		log.Fatalf("加载配置文件失败: %v", err)
 		return
@@ -66,14 +66,13 @@ func main() {
 	if err = etcdRegistry.Register(ctx); err != nil {
 		log.Fatalf("服务注册到 etcd 失败: %v", err)
 	}
-	log.Println("服务成功注册到 etcd")
 
 	// 优雅退出：捕获退出信号时注销服务并关闭 etcd 客户端
 	go func() {
 		sigCh := make(chan os.Signal, 1)
 		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 		<-sigCh
-		log.Println("接收到退出信号，开始注销服务...")
+		fmt.Println("接收到退出信号，开始注销etcd服务...")
 		if err := etcdRegistry.Deregister(ctx); err != nil {
 			log.Printf("注销服务失败: %v", err)
 		}
@@ -84,7 +83,7 @@ func main() {
 
 	// 启动 gRPC 服务，使用配置文件中指定的端口（例如：cfg.Server.Port）
 	port := cfg.Server.Port
-	log.Printf("gRPC 服务器启动在端口 %s...", port)
+	fmt.Printf("gRPC 服务器启动在端口 %s...", port)
 	if err = grpc.RunGRPCServer(port, db, redisClient, bf, cfg); err != nil {
 		log.Fatalf("启动 gRPC 服务器失败: %v", err)
 	}

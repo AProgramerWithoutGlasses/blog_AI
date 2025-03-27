@@ -2,7 +2,7 @@ package grpc
 
 import (
 	"context"
-	"fmt"
+	"go.uber.org/zap"
 	"siwuai/internal/app"
 	appimpl "siwuai/internal/app/impl"
 	"siwuai/internal/domain/model/dto"
@@ -36,7 +36,7 @@ func (h *tokenGRPCHandler) GenerateToken(ctx context.Context, req *pbToken.Token
 
 	resp1, err := h.app.GenerateToken(&req1)
 	if err != nil {
-		fmt.Println("ExplainCode()", err)
+		zap.L().Error("GenerateToken() ", zap.Error(err))
 		return
 	}
 

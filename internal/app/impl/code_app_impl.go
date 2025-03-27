@@ -6,7 +6,6 @@ import (
 	"siwuai/internal/domain/model/dto"
 	"siwuai/internal/domain/service"
 	"siwuai/internal/infrastructure/persistence"
-	"strconv"
 )
 
 type codeApp struct {
@@ -25,17 +24,8 @@ func NewCodeApp(r persistence.CodeRepository, ds service.CodeDomainService) app.
 func (uc *codeApp) ExplainCode(req *dto.CodeReq) (code1 *dto.Code, err error) {
 	code1, err = uc.codeDomainService.ExplainCode(req)
 	if err != nil {
-		fmt.Println("app.ExplainCode() uc.codeDomainService.ExplainCode() err: ", err)
+		err = fmt.Errorf("uc.codeDomainService.ExplainCode() %v", err)
 		return
 	}
-
-	history, err := uc.repo.GetHistory(strconv.Itoa(int(req.UserId)))
-	if err != nil {
-		fmt.Println("app.ExplainCode() uc.repo.GetHistory() err: ", err)
-		return
-	}
-
-	fmt.Printf("userId: %d 's histories is: %v\n", req.UserId, history)
-
 	return
 }

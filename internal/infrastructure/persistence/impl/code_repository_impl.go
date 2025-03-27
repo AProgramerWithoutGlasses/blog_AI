@@ -20,10 +20,11 @@ func NewMySQLCodeRepository(db *gorm.DB) persistence.CodeRepository {
 func (r *mysqlCodeRepository) GetCodeByHash(key string) (code entity.Code, ok bool, err error) {
 	err = r.db.Where("`key` = ?", key).First(&code).Error
 	if err != nil {
-		fmt.Println("该错误已手动忽略:  r.db.Where().First(&code) err: ")
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			fmt.Println("该错误已手动忽略:  r.db.Where().First(&code) err: ", err)
 			err = nil
 		}
+		err = fmt.Errorf("r.db.Where(`key` = ?, key).First(&code) err: %v", err)
 		return
 	}
 	return code, true, err
@@ -37,7 +38,7 @@ func (r *mysqlCodeRepository) SaveCode(code *entity.Code) (codeId uint, err erro
 	fmt.Println("code.id:", code.ID)
 	result := r.db.Where(entity.Code{Key: code.Key}).FirstOrCreate(code)
 	if result.Error != nil {
-		fmt.Println("r.db.FirstOrCreate() err: ", result.Error)
+		err = fmt.Errorf("r.db.FirstOrCreate() err: %v", result.Error)
 		return 0, result.Error
 	}
 
@@ -75,7 +76,7 @@ func (r *mysqlCodeRepository) GetHistory(userId string) (history []entity.Code, 
 func (r *mysqlCodeRepository) SaveHistory(history entity.History) (err error) {
 	err = r.db.Create(&history).Error
 	if err != nil {
-		fmt.Println("r.db.Create() err: ", err)
+		err = fmt.Errorf("r.db.Create() err: %v", err)
 	}
 	return
 }
