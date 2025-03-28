@@ -12,44 +12,7 @@ import (
 	"github.com/tmc/langchaingo/llms/openai"
 	"github.com/tmc/langchaingo/prompts"
 	"siwuai/internal/domain/model/dto"
-	"siwuai/internal/infrastructure/constant"
-	"strings"
 )
-
-// Generate 用于调用AI大模型接口，传入你要提问的问题，返回AI给的答复。
-//func Generate(flag globals.AICode, value interface{}) (totalStr string, err error) {
-//	// 初始化 LLM
-//	llm, err := openai.New(
-//		openai.WithModel("deepseek-r1-250120"),
-//		openai.WithToken("18e25f60-6aff-418f-96fe-55b8cee6a273"),
-//		openai.WithBaseURL("https://ark.cn-beijing.volces.com/api/v3"),
-//	)
-//	if err != nil {
-//		fmt.Println("openai.New() err: ", err)
-//		return
-//	}
-//
-//	// 将模板和输入渲染为最终的提示词
-//	promptValue, err := setPrompt(flag, value)
-//	if err != nil {
-//		fmt.Println("promptTemplate.Format() err: ", err)
-//		return
-//	}
-//
-//	// 调用 LLM 的 Generate 方法，支持流式输出
-//	ctx := context.Background()
-//	totalStr, err = llms.GenerateFromSinglePrompt(
-//		ctx,
-//		llm,
-//		promptValue,
-//	)
-//	if err != nil {
-//		fmt.Println("llms.GenerateFromSinglePrompt() err: ", err)
-//		return
-//	}
-//
-//	return
-//}
 
 // Generate 函数
 func Generate(flag constant.AICode, value interface{}) (answer map[string]any, err error) {
