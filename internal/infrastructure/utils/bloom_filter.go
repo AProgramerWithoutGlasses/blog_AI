@@ -20,7 +20,7 @@ func LoadBloomFilter(db *gorm.DB) (bf *bloom.BloomFilter, err error) {
 		// 使用问题的哈希值填充布隆过滤器
 		bf.Add([]byte(code.Key))
 	}
-	fmt.Println("布隆过滤器加载完成")
+	fmt.Println("BloomFilter 加载完成")
 
 	return
 }

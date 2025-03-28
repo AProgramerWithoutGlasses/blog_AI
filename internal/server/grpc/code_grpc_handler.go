@@ -9,6 +9,7 @@ import (
 	appimpl "siwuai/internal/app/impl"
 	"siwuai/internal/domain/model/dto"
 	serviceimpl "siwuai/internal/domain/service/impl"
+	"siwuai/internal/infrastructure/config"
 	"siwuai/internal/infrastructure/constant"
 	persistenceimpl "siwuai/internal/infrastructure/persistence/impl"
 	"siwuai/internal/infrastructure/redis_utils"
@@ -20,10 +21,10 @@ type codeGRPCHandler struct {
 	uc app.CodeApp
 }
 
-func NewCodeGRPCHandler(db *gorm.DB, redisClient *redis_utils.RedisClient, bf *bloom.BloomFilter) pb.CodeServiceServer {
+func NewCodeGRPCHandler(db *gorm.DB, redisClient *redis_utils.RedisClient, bf *bloom.BloomFilter, cfg config.Config) pb.CodeServiceServer {
 	repo := persistenceimpl.NewMySQLCodeRepository(db)
 	sign := constant.NewJudgingSign()
-	ds := serviceimpl.NewCodeDomainService(repo, redisClient, bf, sign)
+	ds := serviceimpl.NewCodeDomainService(repo, redisClient, bf, sign, cfg)
 	uc := appimpl.NewCodeApp(repo, ds)
 	return &codeGRPCHandler{uc: uc}
 }

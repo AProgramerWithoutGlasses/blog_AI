@@ -6,6 +6,7 @@ import (
 	"siwuai/internal/domain/model/dto"
 	"siwuai/internal/domain/model/entity"
 	"siwuai/internal/domain/service"
+	"siwuai/internal/infrastructure/config"
 	"siwuai/internal/infrastructure/constant"
 	"siwuai/internal/infrastructure/persistence"
 	"siwuai/internal/infrastructure/utils"
@@ -15,12 +16,14 @@ import (
 type articleDomainService struct {
 	repo persistence.ArticleRepositoryInterface
 	sign constant.JudgingSignInterface
+	cfg  config.Config
 }
 
-func NewArticleDomainService(repo persistence.ArticleRepositoryInterface, sign constant.JudgingSignInterface) service.ArticleDomainServiceInterface {
+func NewArticleDomainService(repo persistence.ArticleRepositoryInterface, sign constant.JudgingSignInterface, cfg config.Config) service.ArticleDomainServiceInterface {
 	return &articleDomainService{
 		repo: repo,
 		sign: sign,
+		cfg:  cfg,
 	}
 }
 
@@ -34,7 +37,7 @@ func (a *articleDomainService) VerifyHash(key string) (*dto.ArticleFirst, error)
 }
 
 func (a *articleDomainService) AskAI(key string, ap *dto.ArticlePrompt) (*dto.ArticleFirst, error) {
-	answer, err := utils.Generate(a.sign.GetArticleFlag(), ap)
+	answer, err := utils.Generate(a.sign.GetArticleFlag(), ap, a.cfg)
 	//answer, stream, err := utils.GenerateStream(globals.ArticleAICode, ap)
 	if err != nil {
 		fmt.Println("utils.Generate() err: ", err)

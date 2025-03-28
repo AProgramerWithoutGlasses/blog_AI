@@ -30,10 +30,10 @@ func RunGRPCServer(port string, db *gorm.DB, rdb *redis_utils.RedisClient, bf *b
 	)
 
 	// 注册 CodeService
-	pbcode.RegisterCodeServiceServer(grpcServer, server.NewCodeGRPCHandler(db, rdb, bf))
+	pbcode.RegisterCodeServiceServer(grpcServer, server.NewCodeGRPCHandler(db, rdb, bf, cfg))
 
 	// 注册 ArticleService
-	pb.RegisterArticleServiceServer(grpcServer, server.NewArticleGRPCHandler(db))
+	pb.RegisterArticleServiceServer(grpcServer, server.NewArticleGRPCHandler(db, cfg))
 
 	// 注册 TokenService
 	pbtoken.RegisterTokenServiceServer(grpcServer, server.NewTokenGRPCHandler(cfg))

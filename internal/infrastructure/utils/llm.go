@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/tmc/langchaingo/chains"
 	"go.uber.org/zap"
+	"siwuai/internal/infrastructure/config"
 	"siwuai/internal/infrastructure/constant"
 	"strings"
 
@@ -15,14 +16,14 @@ import (
 )
 
 // Generate 函数
-func Generate(flag constant.AICode, value interface{}) (answer map[string]any, err error) {
+func Generate(flag constant.AICode, value interface{}, cfg config.Config) (answer map[string]any, err error) {
 	var promptTemplate prompts.ChatPromptTemplate
 	var input map[string]any
 	// 初始化LLM
 	llm, err := openai.New(
-		openai.WithModel("deepseek-r1-250120"),
-		openai.WithToken("18e25f60-6aff-418f-96fe-55b8cee6a273"),
-		openai.WithBaseURL("https://ark.cn-beijing.volces.com/api/v3"),
+		openai.WithToken(cfg.Llm.ApiKey),
+		openai.WithModel(cfg.Llm.Model),
+		openai.WithBaseURL(cfg.Llm.BaseURL),
 	)
 	if err != nil {
 		zap.L().Error("openai.New() err:", zap.Error(err))
@@ -78,7 +79,7 @@ func Generate(flag constant.AICode, value interface{}) (answer map[string]any, e
 }
 
 // GenerateStream 用于调用AI大模型接口，传入你要提问的问题，返回2个正在写入的chan
-func GenerateStream(flag constant.AICode, value interface{}) (streamChan1, streamChan2 chan string, err error) {
+func GenerateStream(flag constant.AICode, value interface{}, cfg config.Config) (streamChan1, streamChan2 chan string, err error) {
 	fmt.Println("开始调用llm生成新答案, 请稍等......")
 
 	streamChan1 = make(chan string)
@@ -86,19 +87,19 @@ func GenerateStream(flag constant.AICode, value interface{}) (streamChan1, strea
 
 	// 初始化 LLM
 	llm, err := openai.New(
-		openai.WithModel("deepseek-r1-250120"),
-		openai.WithToken("18e25f60-6aff-418f-96fe-55b8cee6a273"),
-		openai.WithBaseURL("https://ark.cn-beijing.volces.com/api/v3"),
+		openai.WithToken(cfg.Llm.ApiKey),
+		openai.WithModel(cfg.Llm.Model),
+		openai.WithBaseURL(cfg.Llm.BaseURL),
 	)
 	if err != nil {
-		fmt.Println("openai.New() err: ", err)
+		err = fmt.Errorf("openai.New() err: %v", err)
 		return
 	}
 
 	// 将模板和输入渲染为最终的提示词
 	promptValue, err := setPrompt(flag, value)
 	if err != nil {
-		fmt.Println("promptTemplate.Format() err: ", err)
+		err = fmt.Errorf("promptTemplate.Format() err: %v", err)
 		return
 	}
 
@@ -131,9 +132,10 @@ func GenerateStream(flag constant.AICode, value interface{}) (streamChan1, strea
 			llm,
 			promptValue,
 			llms.WithStreamingFunc(streamingFunc),
+			llms.WithTemperature(cfg.Llm.TemperatureCode),
 		)
 		if err != nil {
-			fmt.Println("llms.GenerateFromSinglePrompt() err: ", err)
+			err = fmt.Errorf("llms.GenerateFromSinglePrompt() err: %v", err)
 			// 将错误传递给通道（可选，根据需求处理）
 			streamChan1 <- fmt.Sprintf("Error: %v", err)
 			streamChan2 <- fmt.Sprintf("Error: %v", err)
@@ -177,7 +179,7 @@ func setPrompt(flag constant.AICode, value interface{}) (promptValue string, err
 	// 将模板和输入渲染为最终的提示词
 	promptValue, err = promptTemplate.Format(input)
 	if err != nil {
-		fmt.Println("promptTemplate.Format() err: ", err)
+		err = fmt.Errorf("promptTemplate.Format() err: %v", err)
 		return
 	}
 

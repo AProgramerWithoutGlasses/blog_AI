@@ -3,6 +3,7 @@ package impl
 import (
 	"encoding/json"
 	"fmt"
+	"siwuai/internal/infrastructure/config"
 	"siwuai/internal/infrastructure/constant"
 	"strings"
 	"time"
@@ -24,14 +25,16 @@ type codeDomainService struct {
 	redisClient *redis_utils.RedisClient
 	bf          *bloom.BloomFilter
 	sign        constant.JudgingSignInterface
+	cfg         config.Config
 }
 
-func NewCodeDomainService(repo persistence.CodeRepository, redisClient *redis_utils.RedisClient, bf *bloom.BloomFilter, sign constant.JudgingSignInterface) service.CodeDomainService {
+func NewCodeDomainService(repo persistence.CodeRepository, redisClient *redis_utils.RedisClient, bf *bloom.BloomFilter, sign constant.JudgingSignInterface, cfg config.Config) service.CodeDomainService {
 	return &codeDomainService{
 		repo:        repo,
 		redisClient: redisClient,
 		bf:          bf,
 		sign:        sign,
+		cfg:         cfg,
 	}
 }
 
@@ -166,7 +169,7 @@ func (s *codeDomainService) checkMySQL(key string) (*dto.Code, error) {
 
 // FetchAndSave 从 LLM 获取数据并保存到 MySQL、Redis、布隆过滤器
 func (s *codeDomainService) FetchAndSave(req *dto.CodeReq, key string) (*dto.Code, error) {
-	streamChan1, streamChan2, err := utils.GenerateStream(s.sign.GetCodeFlag(), req)
+	streamChan1, streamChan2, err := utils.GenerateStream(s.sign.GetCodeFlag(), req, s.cfg)
 	if err != nil {
 		err = fmt.Errorf("utils.GenerateStream() %v", err)
 		return nil, err
