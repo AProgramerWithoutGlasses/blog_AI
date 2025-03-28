@@ -13,7 +13,8 @@ func LogInit(cfg config.Config) {
 	fmt.Printf("LogPath: %s, AppName: %s, Level: %d\n", cfg.Logger.LogPath, cfg.Logger.AppName, cfg.Logger.Level)
 	writeSyncer := GetLogWriter(cfg.Logger.LogPath, cfg.Logger.AppName)
 	if writeSyncer == nil {
-		zap.L().Error("writeSyncer is nil, check GetLogWriter")
+		fmt.Println("writeSyncer is nil, check GetLogWriter")
+		//zap.L().Error("writeSyncer is nil, check GetLogWriter")
 		//panic("writeSyncer is nil, check GetLogWriter")
 	}
 
@@ -82,14 +83,14 @@ func GetEncoder() zapcore.Encoder {
 // GetLogWriter 获取日志写入器
 func GetLogWriter(logPath, appName string) zapcore.WriteSyncer {
 	if logPath == "" {
-		zap.L().Error("logPath is empty")
+		fmt.Println("logPath is empty")
 		//panic("logPath is empty")
 	}
 
 	// 确保日志目录存在
 	if err := os.MkdirAll(logPath, os.ModePerm); err != nil {
-		zap.L().Error("failed to create log directory", zap.Error(err))
-		//fmt.Printf("failed to create log directory: %v\n", err)
+		//zap.L().Error("failed to create log directory", zap.Error(err))
+		fmt.Printf("failed to create log directory: %v\n", err)
 		return nil
 	}
 
@@ -97,7 +98,7 @@ func GetLogWriter(logPath, appName string) zapcore.WriteSyncer {
 	fileName := fmt.Sprintf("./%s/%s-%s.log", logPath, appName, currentDate)
 	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		zap.L().Error("创建日志文件失败")
+		fmt.Println("创建日志文件失败")
 		//log.Fatal("创建日志文件失败")
 	}
 	return zapcore.AddSync(file)

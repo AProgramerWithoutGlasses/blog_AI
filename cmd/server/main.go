@@ -22,7 +22,7 @@ func main() {
 	// 加载配置文件
 	cfg, err := config.LoadConfig("configs", "local")
 	if err != nil {
-		log.Fatalf("加载配置文件失败: %v", err)
+		fmt.Println("加载配置文件失败: %v", err)
 		return
 	}
 
@@ -31,6 +31,7 @@ func main() {
 
 	// 封装 MySQL 初始化
 	db, err := mysqlInfra.NewMySQLDB(cfg)
+	zap.L().Info("初始化 MySQL 成功")
 	if err != nil {
 		zap.L().Error("初始化 MySQL 失败: %v", zap.Error(err))
 		return
@@ -38,6 +39,7 @@ func main() {
 
 	// 初始化 Redis
 	redisClient, err := redis_utils.NewRedisClient(cfg)
+	zap.L().Info(" 初始化 Redis 成功")
 	if err != nil {
 		zap.L().Error("初始化 Redis 失败", zap.Error(err))
 		return

@@ -44,7 +44,7 @@ func (a *articleDomainService) AskAI(key string, ap *dto.ArticlePrompt) (*dto.Ar
 	//fmt.Println("stream:", stream)
 
 	// 提取数据
-	articleFirst := a.ParseAnswer(answer)
+	articleFirst := a.ParseAnswer(answer["text"].(string))
 	//articleFirst := a.ParseAnswer(answer)
 	articleFirst.Key = key
 
