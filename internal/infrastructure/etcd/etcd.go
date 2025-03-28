@@ -49,7 +49,7 @@ func (r *EtcdRegistry) Register(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("etcd 注册服务成功:", key, " - ", r.serviceAddr)
+	fmt.Println("etcd 服务注册成功:", key, " - ", r.serviceAddr)
 
 	// 启动续租
 	ch, err := r.client.KeepAlive(ctx, r.leaseID)

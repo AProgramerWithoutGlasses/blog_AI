@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	"log"
 )
 
@@ -40,6 +41,13 @@ type Config struct {
 		SecretKey        string `mapstructure:"secretKey"`        // token验证密钥
 		GenerateTokenKey string `mapstructure:"generateTokenKey"` // token生成密钥
 	} `mapstructure:"token"`
+	Llm struct {
+		ApiKey             string  `mapstructure:"apiKey"`
+		Model              string  `mapstructure:"model"`
+		BaseURL            string  `mapstructure:"baseURL"`
+		TemperatureCode    float64 `mapstructure:"temperatureCode"`
+		TemperatureArticle float64 `mapstructure:"temperatureArticle"`
+	} `mapstructure:"llm"`
 }
 
 // LoadConfig 加载并解析配置文件
@@ -57,6 +65,9 @@ func LoadConfig(path string, name string) (config Config, err error) {
 		log.Fatalf("无法解析配置文件: %v", err)
 	}
 
-	fmt.Printf("%s.yaml 初始化成功\n", name)
+	successMsg := fmt.Sprintf("%s.yaml 初始化成功", name)
+	fmt.Println(successMsg)
+	zap.L().Info(successMsg)
+	zap.L().Info("1111")
 	return
 }
