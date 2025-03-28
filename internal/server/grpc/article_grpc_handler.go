@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"siwuai/internal/app"
 	impl2 "siwuai/internal/app/impl"
@@ -31,6 +32,7 @@ func NewArticleGRPCHandler(db *gorm.DB) pb.ArticleServiceServer {
 func (a *articleGRPCHandler) GetArticleInfoFirst(ctx context.Context, req *pb.GetArticleInfoFirstRequest) (*pb.GetArticleInfoFirstResponse, error) {
 	articleFirst, err := a.repo.GetArticleInfoFirst(req.Content, req.Tags)
 	if err != nil {
+		zap.L().Error("GetArticleInfoFirst -> ", zap.Error(err))
 		return nil, err
 	}
 	// 封装数据
@@ -47,6 +49,7 @@ func (a *articleGRPCHandler) GetArticleInfoFirst(ctx context.Context, req *pb.Ge
 func (a *articleGRPCHandler) SaveArticleID(ctx context.Context, req *pb.SaveArticleIDRequest) (*pb.SaveArticleIDResponse, error) {
 	err := a.repo.SaveArticleID(req.Key, uint(req.ArticleID))
 	if err != nil {
+		zap.L().Error("SaveArticleID -> ", zap.Error(err))
 		return nil, err
 	}
 	res := &pb.SaveArticleIDResponse{
@@ -59,6 +62,7 @@ func (a *articleGRPCHandler) SaveArticleID(ctx context.Context, req *pb.SaveArti
 func (a *articleGRPCHandler) GetArticleInfo(ctx context.Context, req *pb.GetArticleInfoRequest) (*pb.GetArticleInfoResponse, error) {
 	articleSecond, codes, err := a.repo.GetArticleInfo(uint(req.ArticleID), uint(req.UserID))
 	if err != nil {
+		zap.L().Error("GetArticleInfo -> ", zap.Error(err))
 		return nil, err
 	}
 	res := &pb.GetArticleInfoResponse{
@@ -81,6 +85,7 @@ func (a *articleGRPCHandler) GetArticleInfo(ctx context.Context, req *pb.GetArti
 func (a *articleGRPCHandler) DelArticleInfo(ctx context.Context, req *pb.DelArticleInfoRequest) (*pb.DelArticleInfoResponse, error) {
 	err := a.repo.DelArticleInfo(uint(req.ArticleID))
 	if err != nil {
+		zap.L().Error("DelArticleInfo -> ", zap.Error(err))
 		return nil, err
 	}
 	res := &pb.DelArticleInfoResponse{

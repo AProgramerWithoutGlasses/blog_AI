@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/tmc/langchaingo/chains"
+	"go.uber.org/zap"
 	"siwuai/internal/infrastructure/constant"
 	"strings"
 
@@ -59,7 +60,8 @@ func Generate(flag constant.AICode, value interface{}) (answer map[string]any, e
 		openai.WithBaseURL("https://ark.cn-beijing.volces.com/api/v3"),
 	)
 	if err != nil {
-		fmt.Println("openai.New() err:", err)
+		zap.L().Error("openai.New() err:", zap.Error(err))
+		//fmt.Println("openai.New() err:", err)
 		return
 	}
 
@@ -90,7 +92,8 @@ func Generate(flag constant.AICode, value interface{}) (answer map[string]any, e
 	ctx := context.Background()
 	result, err := chain.Call(ctx, input)
 	if err != nil {
-		fmt.Println("Error:", err)
+		zap.L().Error("chain.Call(ctx, input) : ", zap.Error(err))
+		//fmt.Println("Error:", err)
 		return
 	}
 
