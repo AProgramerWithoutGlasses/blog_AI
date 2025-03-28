@@ -26,7 +26,7 @@ func NewTokenApp(service1 service.TokenDomainService, cfg config.Config) app.Tok
 func (app *tokenApp) GenerateToken(req *dto.TokenReq) (resp *dto.TokenResp, err error) {
 	token, err := app.tokenDomainService.GenerateToken(req, app.generateTokenKey, app.secretKey)
 	if err != nil {
-		fmt.Println("app.tokenDomainService.GenerateToken() err: ", err)
+		err = fmt.Errorf("app.tokenDomainService.GenerateToken() %v", err)
 		return
 	}
 

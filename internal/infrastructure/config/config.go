@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"github.com/spf13/viper"
 	"log"
 )
@@ -42,8 +43,8 @@ type Config struct {
 }
 
 // LoadConfig 加载并解析配置文件
-func LoadConfig(path string) (config Config, err error) {
-	viper.SetConfigName("local")
+func LoadConfig(path string, name string) (config Config, err error) {
+	viper.SetConfigName(name)
 	viper.AddConfigPath(path)
 	viper.SetConfigType("yaml")
 
@@ -55,5 +56,7 @@ func LoadConfig(path string) (config Config, err error) {
 	if err != nil {
 		log.Fatalf("无法解析配置文件: %v", err)
 	}
+
+	fmt.Printf("%s.yaml 初始化成功\n", name)
 	return
 }

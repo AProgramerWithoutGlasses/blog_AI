@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"go.uber.org/zap"
 	"io"
 )
 
@@ -12,7 +13,7 @@ func Hash(question string) (hashVal string, err error) {
 	hasher := sha256.New()
 	_, err = io.WriteString(hasher, question)
 	if err != nil {
-		fmt.Println("io.WriteString(hasher, question) err: ", err)
+		err = fmt.Errorf("io.WriteString(hasher, question) err: %v", zap.Error(err))
 		return
 	}
 	// 使用 hex.EncodeToString 将二进制哈希结果转换为十六进制字符串

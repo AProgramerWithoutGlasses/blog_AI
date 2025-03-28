@@ -60,7 +60,7 @@ func (r *RedisClient) Get(key string) (string, error) {
 // Set 设置缓存值
 func (r *RedisClient) Set(key, value string, expiration time.Duration) error {
 	if err := r.client.Set(r.ctx, key, value, expiration).Err(); err != nil {
-		return fmt.Errorf("redis Set 失败: %v", err)
+		return fmt.Errorf("r.client.Set() err: %v", err)
 	}
 	return nil
 }
@@ -71,10 +71,17 @@ func (r *RedisClient) TryLock(key string, expiration time.Duration) (bool, error
 	defer cancel()
 
 	// 使用 SETNX 尝试设置锁
-	result, err := r.client.SetNX(ctx, key, "locked", expiration).Result()
+	result, err := r.client.SetNX(ctx, "lock:"+key, "locked", expiration).Result()
 	if err != nil {
 		return false, fmt.Errorf("redis SetNX 失败: %v", err)
 	}
+
+	if result {
+		fmt.Println("加锁成功: ", "lock:"+key)
+	} else {
+		fmt.Println("加锁失败，锁已存在，开始轮询: ", "lock "+key)
+	}
+
 	return result, nil
 }
 
@@ -83,9 +90,11 @@ func (r *RedisClient) Unlock(key string) error {
 	ctx, cancel := context.WithTimeout(r.ctx, 5*time.Second) // 设置 5 秒超时
 	defer cancel()
 
-	if err := r.client.Del(ctx, key).Err(); err != nil {
-		return fmt.Errorf("redis Del 失败: %v", err)
+	if err := r.client.Del(ctx, "lock:"+key).Err(); err != nil {
+		return fmt.Errorf("r.client.Del(ctx, key) err: %v", err)
 	}
+
+	fmt.Println("解锁成功: ", "lock:"+key)
 	return nil
 }
 

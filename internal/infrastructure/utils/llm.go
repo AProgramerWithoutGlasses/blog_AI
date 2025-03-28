@@ -12,6 +12,8 @@ import (
 	"github.com/tmc/langchaingo/llms/openai"
 	"github.com/tmc/langchaingo/prompts"
 	"siwuai/internal/domain/model/dto"
+	"siwuai/internal/infrastructure/constant"
+	"strings"
 )
 
 // Generate 用于调用AI大模型接口，传入你要提问的问题，返回AI给的答复。
@@ -112,8 +114,13 @@ func Generate(flag constant.AICode, value interface{}) (answer map[string]any, e
 	return result, nil
 }
 
-// GenerateStream 用于调用AI大模型接口，传入你要提问的问题，返回AI给的答复。返回值1为完整答复，返回值2为流式答复。
-func GenerateStream(flag constant.AICode, value interface{}) (totalStr string, streamChan chan string, err error) {
+// GenerateStream 用于调用AI大模型接口，传入你要提问的问题，返回2个正在写入的chan
+func GenerateStream(flag constant.AICode, value interface{}) (streamChan1, streamChan2 chan string, err error) {
+	fmt.Println("开始调用llm生成新答案, 请稍等......")
+
+	streamChan1 = make(chan string)
+	streamChan2 = make(chan string)
+
 	// 初始化 LLM
 	llm, err := openai.New(
 		openai.WithModel("deepseek-r1-250120"),
@@ -133,21 +140,30 @@ func GenerateStream(flag constant.AICode, value interface{}) (totalStr string, s
 	}
 
 	// 创建通道用于传递流式输出
-	streamChan = make(chan string)
+	temp := ""
 
 	// 启动 goroutine 处理 LLM 流
 	go func() {
-		defer close(streamChan) // 流结束后关闭通道
+		defer close(streamChan1) // 流结束后关闭通道
+		defer close(streamChan2) // 流结束后关闭通道
 
 		// 定义流式输出的回调函数
 		streamingFunc := func(ctx context.Context, chunk []byte) error {
-			streamChan <- string(chunk) // 将每个 chunk 发送到通道
+			temp = string(chunk)
+
+			// 检查是否满足跳过条件
+			if temp == "" || temp == "\n\n" {
+				return nil // 跳过当前循环
+			}
+
+			streamChan1 <- temp // 将每个 chunk 发送到通道
+			streamChan2 <- temp // 将每个 chunk 发送到通道
 			return nil
 		}
 
 		// 调用 LLM 的 Generate 方法，支持流式输出
 		ctx := context.Background()
-		totalStr, err = llms.GenerateFromSinglePrompt(
+		_, err = llms.GenerateFromSinglePrompt(
 			ctx,
 			llm,
 			promptValue,
@@ -156,7 +172,8 @@ func GenerateStream(flag constant.AICode, value interface{}) (totalStr string, s
 		if err != nil {
 			fmt.Println("llms.GenerateFromSinglePrompt() err: ", err)
 			// 将错误传递给通道（可选，根据需求处理）
-			streamChan <- fmt.Sprintf("Error: %v", err)
+			streamChan1 <- fmt.Sprintf("Error: %v", err)
+			streamChan2 <- fmt.Sprintf("Error: %v", err)
 		}
 	}()
 

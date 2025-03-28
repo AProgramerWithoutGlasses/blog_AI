@@ -2,25 +2,32 @@ package grpc
 
 import (
 	"github.com/bits-and-blooms/bloom/v3"
+	"google.golang.org/grpc"
 	"gorm.io/gorm"
 	"net"
+	serviceimpl "siwuai/internal/domain/service/impl" // 导入服务实现
 	"siwuai/internal/infrastructure/config"
 	"siwuai/internal/infrastructure/redis_utils"
+	server "siwuai/internal/server/grpc"
 	pb "siwuai/proto/article"
 	pbcode "siwuai/proto/code"
 	pbtoken "siwuai/proto/token"
-
-	"google.golang.org/grpc"
-	server "siwuai/internal/server/grpc"
 )
 
-// RunGRPCServer 启动 gRPC 服务器，同时注册 UserService 和 LLMService
+// RunGRPCServer 启动 gRPC 服务器，并启用 token 验证
 func RunGRPCServer(port string, db *gorm.DB, rdb *redis_utils.RedisClient, bf *bloom.BloomFilter, cfg config.Config) error {
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		return err
 	}
-	grpcServer := grpc.NewServer()
+
+	// 初始化 token 服务
+	tokenSvc := serviceimpl.NewTokenDomainService()
+
+	// 创建 gRPC 服务器并注册 token 验证拦截器
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(TokenValidationInterceptor(tokenSvc, cfg.Token.SecretKey)),
+	)
 
 	// 注册 CodeService
 	pbcode.RegisterCodeServiceServer(grpcServer, server.NewCodeGRPCHandler(db, rdb, bf))

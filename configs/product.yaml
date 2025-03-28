@@ -2,9 +2,31 @@ server:
   port: "50051"
 
 mysql:
-  host: "192.168.10.4"
-  port: 3310
+  host: "8.154.36.180"
+  port: 3306
   username: "root"
   password: "123456"
-  dbname: "siwuai"
-  parseTime: true
+  dbname: "forum"
+
+redis:
+  addr: "8.154.36.180"
+  password: "123456"
+  port: 6379
+  db: 0
+  timeout: 5
+
+etcd:
+  endpoints:
+    - "8.154.36.180:2378"
+  serviceName: "services/siwuai"
+  serviceAddr: "8.154.36.180:50051"
+  ttl: 5
+
+token:
+  secretKey: "123456"
+  generateTokenKey: "123456"
+
+log:
+  logPath: "./logs"
+  appName: "siwuai"
+  level: 1

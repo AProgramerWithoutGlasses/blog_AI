@@ -24,6 +24,7 @@ func NewEtcdRegistry(endpoints []string, serviceName, serviceAddr string, ttl in
 		DialTimeout: 5 * time.Second,
 	})
 	if err != nil {
+
 		return nil, err
 	}
 	return &EtcdRegistry{
