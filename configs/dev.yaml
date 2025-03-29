@@ -2,14 +2,14 @@ server:
   port: "50051"
 
 mysql:
-  host: "192.168.10.4"
+  host: "192.168.10.7"
   port: 3310
   username: "root"
   password: "123456"
   dbname: "forum"
 
 redis:
-  addr: "192.168.10.4"
+  addr: "192.168.10.7"
   password: "123456"
   port: 6379
   db: 0
@@ -17,9 +17,9 @@ redis:
 
 etcd:
   endpoints:
-    - "192.168.10.4:2378"
+    - "192.168.10.7:2378"
   serviceName: "services/siwuai"
-  serviceAddr: "192.168.10.4:50051"
+  serviceAddr: "192.168.10.7:50051"
   ttl: 5
 
 token:
