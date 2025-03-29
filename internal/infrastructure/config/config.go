@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
 	"log"
 )
 
@@ -67,7 +66,5 @@ func LoadConfig(path string, name string) (config Config, err error) {
 
 	successMsg := fmt.Sprintf("%s.yaml 初始化成功", name)
 	fmt.Println(successMsg)
-	zap.L().Info(successMsg)
-	zap.L().Info("1111")
 	return
 }

@@ -39,9 +39,16 @@ func NewCodeDomainService(repo persistence.CodeRepository, redisClient *redis_ut
 }
 
 func (s *codeDomainService) ExplainCode(req *dto.CodeReq) (code *dto.Code, err error) {
-	code, err = s.GetAnswer(req)
+	key, err := utils.Hash(req.Question)
+	if err != nil {
+		err = fmt.Errorf("utils.Hash() %v", err)
+		return
+	}
+
+	code, err = s.GetAnswer(req, key)
 	if err != nil {
 		err = fmt.Errorf("s.GetAnswer() %v", err)
+		s.redisClient.Unlock(key)
 		return
 	}
 
@@ -57,13 +64,7 @@ func (s *codeDomainService) ExplainCode(req *dto.CodeReq) (code *dto.Code, err e
 }
 
 // GetAnswer 用于得到代码解释信息
-func (s *codeDomainService) GetAnswer(req *dto.CodeReq) (code *dto.Code, err error) {
-	key, err := utils.Hash(req.Question)
-	if err != nil {
-		err = fmt.Errorf("utils.Hash() %v", err)
-		return
-	}
-
+func (s *codeDomainService) GetAnswer(req *dto.CodeReq, key string) (code *dto.Code, err error) {
 	// 尝试设置锁，locked为true表示设置锁成功
 	locked, err := s.redisClient.TryLock(key, lockTTL)
 	if err != nil {

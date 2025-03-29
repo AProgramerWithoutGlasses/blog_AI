@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"go.uber.org/zap"
-	"log"
 	"os"
 	"os/signal"
 	"siwuai/internal/infrastructure/loggers"
@@ -22,12 +21,14 @@ func main() {
 	// 加载配置文件
 	cfg, err := config.LoadConfig("configs", "local")
 	if err != nil {
-		fmt.Println("加载配置文件失败: %v", err)
+		fmt.Printf("加载配置文件失败: %v\n", err)
 		return
 	}
 
 	// 初始化日志
 	loggers.LogInit(cfg)
+
+	zap.L().Info(fmt.Sprintf("config初始化成功: %#v\n", cfg))
 
 	// 封装 MySQL 初始化
 	db, err := mysqlInfra.NewMySQLDB(cfg)
@@ -49,7 +50,7 @@ func main() {
 	// 初始化布隆过滤器（假设预计存储 100 万条记录，误判率 0.01）
 	bf, err := utils.LoadBloomFilter(db)
 	if err != nil {
-		fmt.Println("加载布隆过滤器失败 utils.LoadBloomFilter() err: ", err)
+		zap.L().Error(fmt.Sprintf("加载布隆过滤器失败 utils.LoadBloomFilter() err: %v", err))
 		return
 	}
 
@@ -57,7 +58,8 @@ func main() {
 	etcdCfg := cfg.Etcd
 	etcdRegistry, err := etcd.NewEtcdRegistry(etcdCfg.Endpoints, etcdCfg.ServiceName, etcdCfg.ServiceAddr, etcdCfg.TTL)
 	if err != nil {
-		log.Fatalf("创建 etcd 注册器失败: %v", err)
+		zap.L().Error(fmt.Sprintf("创建 etcd 实例失败: %v", err))
+		return
 	}
 
 	// 创建上下文控制 etcd 注册生命周期
@@ -66,7 +68,8 @@ func main() {
 
 	// 注册服务到 etcd
 	if err = etcdRegistry.Register(ctx); err != nil {
-		log.Fatalf("服务注册到 etcd 失败: %v", err)
+		zap.L().Error(fmt.Sprintf("服务注册到 etcd 失败: %v", err))
+		return
 	}
 
 	// 优雅退出：捕获退出信号时注销服务并关闭 etcd 客户端
@@ -74,9 +77,10 @@ func main() {
 		sigCh := make(chan os.Signal, 1)
 		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 		<-sigCh
-		fmt.Println("接收到退出信号，开始注销etcd服务...")
-		if err := etcdRegistry.Deregister(ctx); err != nil {
-			log.Printf("注销服务失败: %v", err)
+		zap.L().Info(fmt.Sprintln("接收到退出信号，开始注销etcd服务..."))
+		if err = etcdRegistry.Deregister(ctx); err != nil {
+			zap.L().Error(fmt.Sprintf("注销服务失败: %v", err))
+			return
 		}
 		etcdRegistry.Close()
 		cancel()
@@ -85,8 +89,13 @@ func main() {
 
 	// 启动 gRPC 服务，使用配置文件中指定的端口（例如：cfg.Server.Port）
 	port := cfg.Server.Port
-	fmt.Printf("gRPC 服务器启动在端口 %s...", port)
+
+	msg := fmt.Sprintf("gRPC 服务器启动在端口 %s...", port)
+	fmt.Println(msg)
+	zap.L().Info(msg)
+
 	if err = grpc.RunGRPCServer(port, db, redisClient, bf, cfg); err != nil {
-		log.Fatalf("启动 gRPC 服务器失败: %v", err)
+		zap.L().Error(fmt.Sprintf("启动 gRPC 服务器失败: %v", err))
+		return
 	}
 }

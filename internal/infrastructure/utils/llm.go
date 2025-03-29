@@ -8,6 +8,7 @@ import (
 	"siwuai/internal/infrastructure/config"
 	"siwuai/internal/infrastructure/constant"
 	"strings"
+	"time"
 
 	"github.com/tmc/langchaingo/llms"
 	"github.com/tmc/langchaingo/llms/openai"
@@ -82,8 +83,9 @@ func Generate(flag constant.AICode, value interface{}, cfg config.Config) (answe
 func GenerateStream(flag constant.AICode, value interface{}, cfg config.Config) (streamChan1, streamChan2 chan string, err error) {
 	fmt.Println("开始调用llm生成新答案, 请稍等......")
 
-	streamChan1 = make(chan string)
-	streamChan2 = make(chan string)
+	streamChan1 = make(chan string, 1)
+	streamChan2 = make(chan string, 1)
+	errChan := make(chan error, 1) // 添加错误通道
 
 	// 初始化 LLM
 	llm, err := openai.New(
@@ -103,29 +105,23 @@ func GenerateStream(flag constant.AICode, value interface{}, cfg config.Config) 
 		return
 	}
 
-	// 创建通道用于传递流式输出
-	temp := ""
-
 	// 启动 goroutine 处理 LLM 流
 	go func() {
-		defer close(streamChan1) // 流结束后关闭通道
-		defer close(streamChan2) // 流结束后关闭通道
+		defer close(streamChan1)
+		defer close(streamChan2)
+		defer close(errChan) // 关闭错误通道
 
-		// 定义流式输出的回调函数
+		var temp string
 		streamingFunc := func(ctx context.Context, chunk []byte) error {
 			temp = string(chunk)
-
-			// 检查是否满足跳过条件
 			if temp == "" || temp == "\n\n" {
-				return nil // 跳过当前循环
+				return nil
 			}
-
-			streamChan1 <- temp // 将每个 chunk 发送到通道
-			streamChan2 <- temp // 将每个 chunk 发送到通道
+			streamChan1 <- temp
+			streamChan2 <- temp
 			return nil
 		}
 
-		// 调用 LLM 的 Generate 方法，支持流式输出
 		ctx := context.Background()
 		_, err = llms.GenerateFromSinglePrompt(
 			ctx,
@@ -135,14 +131,26 @@ func GenerateStream(flag constant.AICode, value interface{}, cfg config.Config) 
 			llms.WithTemperature(cfg.Llm.TemperatureCode),
 		)
 		if err != nil {
-			err = fmt.Errorf("llms.GenerateFromSinglePrompt() err: %v", err)
-			// 将错误传递给通道（可选，根据需求处理）
-			streamChan1 <- fmt.Sprintf("Error: %v", err)
-			streamChan2 <- fmt.Sprintf("Error: %v", err)
+			// 通过通道将协程中的错误传递给主线程
+			errChan <- fmt.Errorf("llms.GenerateFromSinglePrompt() err: %v", err)
+			return
 		}
+		errChan <- nil // 成功时发送 nil
 	}()
 
-	return
+	// 主线程等待 goroutine 的错误, 为不阻碍后续的运行关联llm生成答案，此处阻塞2s。
+	count := 0
+	for count < 1 {
+		time.Sleep(1 * time.Second)
+		select {
+		case err = <-errChan:
+			return nil, nil, err
+		default:
+			count++
+		}
+	}
+
+	return streamChan1, streamChan2, nil
 }
 
 // setPrompt 用于设置提示词

@@ -35,7 +35,6 @@ func (r *mysqlCodeRepository) SaveCode(code *entity.Code) (codeId uint, err erro
 	originalID := code.ID
 
 	// 使用 FirstOrCreate，基于 Key 字段判断是否已存在
-	fmt.Println("code.id:", code.ID)
 	result := r.db.Where(entity.Code{Key: code.Key}).FirstOrCreate(code)
 	if result.Error != nil {
 		err = fmt.Errorf("r.db.FirstOrCreate() err: %v", result.Error)

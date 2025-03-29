@@ -3,6 +3,7 @@ package etcd
 import (
 	"context"
 	"fmt"
+	"go.uber.org/zap"
 	"time"
 
 	clientv3 "go.etcd.io/etcd/client/v3"
@@ -49,7 +50,10 @@ func (r *EtcdRegistry) Register(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("etcd 服务注册成功:", key, " - ", r.serviceAddr)
+
+	msg := fmt.Sprintf("etcd 服务注册成功: %s - %s", key, r.serviceAddr)
+	fmt.Println(msg)
+	zap.L().Info(msg)
 
 	// 启动续租
 	ch, err := r.client.KeepAlive(ctx, r.leaseID)
