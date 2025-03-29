@@ -3,10 +3,10 @@ server:
 
 mysql:
   host: "192.168.10.7"
-  port: 3310
+  port: 3306
   username: "root"
   password: "123456"
-  dbname: "forum"
+  dbname: "siwuai"
 
 redis:
   addr: "192.168.10.7"
