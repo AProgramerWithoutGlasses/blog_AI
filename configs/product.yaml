@@ -9,7 +9,7 @@ mysql:
   dbname: "siwuai"
 
 redis:
-  addr: "8.154.36.180"
+  addr: "8.154.36.180:6379"
   password: "123456"
   port: 6379
   db: 0

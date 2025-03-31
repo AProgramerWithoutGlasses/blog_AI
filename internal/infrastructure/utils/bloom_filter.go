@@ -14,7 +14,7 @@ func LoadBloomFilter(db *gorm.DB) (bf *bloom.BloomFilter, err error) {
 
 	var codes []entity.Code
 	if err = db.Find(&codes).Error; err != nil {
-		fmt.Printf("加载布隆过滤器失败: %v\n", err)
+		err = fmt.Errorf("db.Find(&codes) err: %v", err)
 		return
 	}
 	for _, code := range codes {

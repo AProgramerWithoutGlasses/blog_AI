@@ -26,7 +26,7 @@ func NewMySQLDB(cfg config.Config) (db *gorm.DB, err error) {
 		},
 	})
 	if err != nil {
-		fmt.Println("persistence.NewMySQLDB() gorm.Open() err: ", err)
+		err = fmt.Errorf("gorm.Open() err: %v", err)
 		return
 	}
 
@@ -37,7 +37,7 @@ func NewMySQLDB(cfg config.Config) (db *gorm.DB, err error) {
 		&entity.Article{},
 	)
 	if err != nil {
-		fmt.Println("persistence.NewMySQLDB() db.AutoMigrate() err: ", err)
+		err = fmt.Errorf("db.AutoMigrate() err: %v", err)
 		return
 	}
 

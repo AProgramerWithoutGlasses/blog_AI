@@ -25,7 +25,7 @@ func NewEtcdRegistry(endpoints []string, serviceName, serviceAddr string, ttl in
 		DialTimeout: 5 * time.Second,
 	})
 	if err != nil {
-
+		err = fmt.Errorf("clientv3.New() err: %v", err)
 		return nil, err
 	}
 	return &EtcdRegistry{
@@ -41,6 +41,7 @@ func (r *EtcdRegistry) Register(ctx context.Context) error {
 	// 申请租约
 	leaseResp, err := r.client.Grant(ctx, r.ttl)
 	if err != nil {
+		err = fmt.Errorf("client.Grant() err: %v", err)
 		return err
 	}
 	r.leaseID = leaseResp.ID
@@ -48,6 +49,7 @@ func (r *EtcdRegistry) Register(ctx context.Context) error {
 	key := fmt.Sprintf("/%s", r.serviceName)
 	_, err = r.client.Put(ctx, key, r.serviceAddr, clientv3.WithLease(r.leaseID))
 	if err != nil {
+		err = fmt.Errorf("client.Put() err: %v", err)
 		return err
 	}
 
@@ -58,6 +60,7 @@ func (r *EtcdRegistry) Register(ctx context.Context) error {
 	// 启动续租
 	ch, err := r.client.KeepAlive(ctx, r.leaseID)
 	if err != nil {
+		err = fmt.Errorf("client.KeepAlive() err: %v", err)
 		return err
 	}
 	go func() {
@@ -84,6 +87,7 @@ func (r *EtcdRegistry) Deregister(ctx context.Context) error {
 	key := fmt.Sprintf("/%s/%s", r.serviceName, r.serviceAddr)
 	_, err := r.client.Delete(ctx, key)
 	if err != nil {
+		err = fmt.Errorf("client.Delete() err: %v", err)
 		return err
 	}
 	return nil
@@ -99,6 +103,7 @@ func (r *EtcdRegistry) Discover(ctx context.Context, serviceName string) ([]stri
 	prefix := fmt.Sprintf("/%s/", serviceName)
 	resp, err := r.client.Get(ctx, prefix, clientv3.WithPrefix())
 	if err != nil {
+		err = fmt.Errorf("client.Get() err: %v", err)
 		return nil, err
 	}
 

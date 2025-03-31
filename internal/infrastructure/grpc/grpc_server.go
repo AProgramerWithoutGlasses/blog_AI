@@ -16,7 +16,7 @@ import (
 
 // RunGRPCServer 启动 gRPC 服务器，并启用 token 验证
 func RunGRPCServer(port string, db *gorm.DB, rdb *redis_utils.RedisClient, bf *bloom.BloomFilter, cfg config.Config) error {
-	lis, err := net.Listen("tcp", ":"+port)
+	lis, err := net.Listen("tcp", "0.0.0.0:"+port)
 	if err != nil {
 		return err
 	}

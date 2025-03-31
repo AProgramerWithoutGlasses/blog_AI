@@ -19,7 +19,7 @@ import (
 
 func main() {
 	// 加载配置文件
-	cfg, err := config.LoadConfig("configs", "local")
+	cfg, err := config.LoadConfig("configs", "dev")
 	if err != nil {
 		fmt.Printf("加载配置文件失败: %v\n", err)
 		return
@@ -32,25 +32,25 @@ func main() {
 
 	// 封装 MySQL 初始化
 	db, err := mysqlInfra.NewMySQLDB(cfg)
-	zap.L().Info("初始化 MySQL 成功")
 	if err != nil {
 		zap.L().Error("初始化 MySQL 失败: %v", zap.Error(err))
 		return
 	}
+	zap.L().Info("初始化 MySQL 成功")
 
 	// 初始化 Redis
 	redisClient, err := redis_utils.NewRedisClient(cfg)
-	zap.L().Info(" 初始化 Redis 成功")
 	if err != nil {
 		zap.L().Error("初始化 Redis 失败", zap.Error(err))
 		return
 	}
 	defer redisClient.Close()
+	zap.L().Info(" 初始化 Redis 成功")
 
 	// 初始化布隆过滤器（假设预计存储 100 万条记录，误判率 0.01）
 	bf, err := utils.LoadBloomFilter(db)
 	if err != nil {
-		zap.L().Error(fmt.Sprintf("加载布隆过滤器失败 utils.LoadBloomFilter() err: %v", err))
+		zap.L().Error(fmt.Sprintf("加载布隆过滤器失败 utils.LoadBloomFilter() %v", err))
 		return
 	}
 
@@ -79,7 +79,7 @@ func main() {
 		<-sigCh
 		zap.L().Info(fmt.Sprintln("接收到退出信号，开始注销etcd服务..."))
 		if err = etcdRegistry.Deregister(ctx); err != nil {
-			zap.L().Error(fmt.Sprintf("注销服务失败: %v", err))
+			zap.L().Error(fmt.Sprintf("etcd 注销服务失败: %v", err))
 			return
 		}
 		etcdRegistry.Close()
