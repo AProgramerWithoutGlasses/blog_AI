@@ -46,14 +46,13 @@ func (r *EtcdRegistry) Register(ctx context.Context) error {
 	}
 	r.leaseID = leaseResp.ID
 
-	key := fmt.Sprintf("/%s", r.serviceName)
-	_, err = r.client.Put(ctx, key, r.serviceAddr, clientv3.WithLease(r.leaseID))
+	_, err = r.client.Put(ctx, r.serviceName, r.serviceAddr, clientv3.WithLease(r.leaseID))
 	if err != nil {
 		err = fmt.Errorf("client.Put() err: %v", err)
 		return err
 	}
 
-	msg := fmt.Sprintf("etcd 服务注册成功: %s - %s", key, r.serviceAddr)
+	msg := fmt.Sprintf("etcd 服务注册成功: %s - %s", r.serviceName, r.serviceAddr)
 	fmt.Println(msg)
 	zap.L().Info(msg)
 

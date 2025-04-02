@@ -24,9 +24,10 @@ func RunGRPCServer(port string, db *gorm.DB, rdb *redis_utils.RedisClient, bf *b
 	// 初始化 token 服务
 	tokenSvc := serviceimpl.NewTokenDomainService()
 
-	// 创建 gRPC 服务器并注册 token 验证拦截器
+	// 创建 gRPC 服务器并注册拦截器
 	grpcServer := grpc.NewServer(
 		grpc.UnaryInterceptor(TokenValidationInterceptor(tokenSvc, cfg.Token.SecretKey)),
+		grpc.StreamInterceptor(StreamTokenValidationInterceptor(tokenSvc, cfg.Token.SecretKey)),
 	)
 
 	// 注册 CodeService

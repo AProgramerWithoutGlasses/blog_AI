@@ -58,9 +58,11 @@ func main() {
 	etcdCfg := cfg.Etcd
 	etcdRegistry, err := etcd.NewEtcdRegistry(etcdCfg.Endpoints, etcdCfg.ServiceName, etcdCfg.ServiceAddr, etcdCfg.TTL)
 	if err != nil {
+		fmt.Println(fmt.Sprintf("创建 etcd 实例失败: %v", err))
 		zap.L().Error(fmt.Sprintf("创建 etcd 实例失败: %v", err))
 		return
 	}
+	zap.L().Info(" 初始化 etcd 成功")
 
 	// 创建上下文控制 etcd 注册生命周期
 	ctx, cancel := context.WithCancel(context.Background())
