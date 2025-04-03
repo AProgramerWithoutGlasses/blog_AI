@@ -19,7 +19,7 @@ import (
 
 func main() {
 	// 加载配置文件
-	cfg, err := config.LoadConfig("configs", "dev")
+	cfg, err := config.LoadConfig("configs", "local")
 	if err != nil {
 		fmt.Printf("加载配置文件失败: %v\n", err)
 		return
@@ -58,11 +58,10 @@ func main() {
 	etcdCfg := cfg.Etcd
 	etcdRegistry, err := etcd.NewEtcdRegistry(etcdCfg.Endpoints, etcdCfg.ServiceName, etcdCfg.ServiceAddr, etcdCfg.TTL)
 	if err != nil {
-		fmt.Println(fmt.Sprintf("创建 etcd 实例失败: %v", err))
 		zap.L().Error(fmt.Sprintf("创建 etcd 实例失败: %v", err))
 		return
 	}
-	zap.L().Info(" 初始化 etcd 成功")
+	zap.L().Info("初始化 etcd 成功")
 
 	// 创建上下文控制 etcd 注册生命周期
 	ctx, cancel := context.WithCancel(context.Background())
@@ -91,13 +90,9 @@ func main() {
 
 	// 启动 gRPC 服务，使用配置文件中指定的端口（例如：cfg.Server.Port）
 	port := cfg.Server.Port
-
-	msg := fmt.Sprintf("gRPC 服务器启动在端口 %s...", port)
-	fmt.Println(msg)
-	zap.L().Info(msg)
-
 	if err = grpc.RunGRPCServer(port, db, redisClient, bf, cfg); err != nil {
 		zap.L().Error(fmt.Sprintf("启动 gRPC 服务器失败: %v", err))
 		return
 	}
+
 }

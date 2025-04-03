@@ -1,7 +1,9 @@
 package grpc
 
 import (
+	"fmt"
 	"github.com/bits-and-blooms/bloom/v3"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
 	"net"
@@ -38,6 +40,10 @@ func RunGRPCServer(port string, db *gorm.DB, rdb *redis_utils.RedisClient, bf *b
 
 	// 注册 TokenService
 	pbtoken.RegisterTokenServiceServer(grpcServer, server.NewTokenGRPCHandler(cfg))
+
+	msg := fmt.Sprintf("gRPC 服务器成功启动在端口 %s...", port)
+	fmt.Println(msg)
+	zap.L().Info(msg)
 
 	return grpcServer.Serve(lis)
 }

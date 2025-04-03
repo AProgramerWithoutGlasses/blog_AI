@@ -9,7 +9,7 @@ import (
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
-// EtcdRegistry 负责将服务注册到 etcd 中
+// EtcdRegistryCannot use c (type zapcore. Core) as the type WriteSyncer Type does not implement WriteSyncer as some methods are missing: Write(p [] byte) (n int, err error) 负责将服务注册到 etcd 中
 type EtcdRegistry struct {
 	client      *clientv3.Client
 	leaseID     clientv3.LeaseID
@@ -23,11 +23,23 @@ func NewEtcdRegistry(endpoints []string, serviceName, serviceAddr string, ttl in
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   endpoints,
 		DialTimeout: 5 * time.Second,
+		Logger:      zap.L(),
 	})
 	if err != nil {
 		err = fmt.Errorf("clientv3.New() err: %v", err)
 		return nil, err
 	}
+
+	// 验证端点有效性
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	_, err = cli.Status(ctx, endpoints[0])
+	if err != nil {
+		err = fmt.Errorf("验证端点有效性失败 cli.Status() %s: %v", endpoints[0], err)
+		cli.Close()
+		return nil, err
+	}
+
 	return &EtcdRegistry{
 		client:      cli,
 		serviceName: serviceName,
