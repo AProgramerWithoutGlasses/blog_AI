@@ -95,7 +95,7 @@ func (r *EtcdRegistry) Register(ctx context.Context) error {
 
 // Deregister 注销服务
 func (r *EtcdRegistry) Deregister(ctx context.Context) error {
-	key := fmt.Sprintf("/%s/%s", r.serviceName, r.serviceAddr)
+	key := fmt.Sprintf("%s/%s", r.serviceName, r.serviceAddr)
 	_, err := r.client.Delete(ctx, key)
 	if err != nil {
 		err = fmt.Errorf("client.Delete() err: %v", err)
@@ -111,7 +111,7 @@ func (r *EtcdRegistry) Close() error {
 
 // Discover 从 etcd 中发现指定服务的所有实例地址
 func (r *EtcdRegistry) Discover(ctx context.Context, serviceName string) ([]string, error) {
-	prefix := fmt.Sprintf("/%s/", serviceName)
+	prefix := fmt.Sprintf("%s/", serviceName)
 	resp, err := r.client.Get(ctx, prefix, clientv3.WithPrefix())
 	if err != nil {
 		err = fmt.Errorf("client.Get() err: %v", err)
