@@ -106,10 +106,12 @@ func (a *articleRepository) DelArticleInfo(articleID uint) error {
 	if result.Error != nil {
 		tx.Rollback()
 		return fmt.Errorf("(a *articleRepository) DelArticleInfo -> %v", result.Error)
-	} else if result.RowsAffected == 0 {
-		tx.Rollback()
-		return fmt.Errorf("数据库中没有该文章的信息")
 	}
+
+	//else if result.RowsAffected == 0 {
+	//	tx.Rollback()
+	//	return fmt.Errorf("数据库中没有该文章的信息")
+	//}
 
 	err := tx.Commit().Error
 	if err != nil {
