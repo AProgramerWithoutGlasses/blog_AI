@@ -11,11 +11,11 @@ import (
 
 // EtcdRegistry 负责将服务注册到 etcd 中
 type EtcdRegistry struct {
-	client      *clientv3.Client
-	leaseID     clientv3.LeaseID
-	serviceName string
-	serviceAddr string
-	ttl         int64
+	client      *clientv3.Client // etcd v3 客户端实例
+	leaseID     clientv3.LeaseID // 租约 ID，用于关联服务和租约
+	serviceName string           // 服务名称
+	serviceAddr string           // 服务地址
+	ttl         int64            // 租约时间（秒）
 }
 
 // NewEtcdRegistry 创建一个新的 etcd 注册实例
@@ -46,7 +46,9 @@ func (r *EtcdRegistry) Register(ctx context.Context) error {
 	}
 	r.leaseID = leaseResp.ID
 
+	fmt.Println("--------------------------------------->", r.serviceName)
 	key := fmt.Sprintf("/%s", r.serviceName)
+	fmt.Println("--------------------------------------->", key)
 	_, err = r.client.Put(ctx, key, r.serviceAddr, clientv3.WithLease(r.leaseID))
 	if err != nil {
 		err = fmt.Errorf("client.Put() err: %v", err)

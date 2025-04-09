@@ -20,6 +20,7 @@ import (
 func Generate(flag constant.AICode, value interface{}, cfg config.Config) (answer map[string]any, err error) {
 	var promptTemplate prompts.ChatPromptTemplate
 	var input map[string]any
+
 	// 初始化LLM
 	llm, err := openai.New(
 		openai.WithToken(cfg.Llm.ApiKey),
@@ -28,7 +29,6 @@ func Generate(flag constant.AICode, value interface{}, cfg config.Config) (answe
 	)
 	if err != nil {
 		zap.L().Error("openai.New() err:", zap.Error(err))
-		//fmt.Println("openai.New() err:", err)
 		return
 	}
 
@@ -60,7 +60,6 @@ func Generate(flag constant.AICode, value interface{}, cfg config.Config) (answe
 	result, err := chain.Call(ctx, input)
 	if err != nil {
 		zap.L().Error("chain.Call(ctx, input) : ", zap.Error(err))
-		//fmt.Println("Error:", err)
 		return
 	}
 
@@ -71,7 +70,6 @@ func Generate(flag constant.AICode, value interface{}, cfg config.Config) (answe
 		count++
 		fmt.Println(i+"=======", v.(string))
 	}
-	//fmt.Println(formattedOutput)
 	fmt.Println("------------------>")
 	fmt.Println("*********>", count)
 	fmt.Println()
