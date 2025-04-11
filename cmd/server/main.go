@@ -27,7 +27,6 @@ func main() {
 
 	// 初始化日志
 	loggers.LogInit(cfg)
-	zap.L().Info("11111我要测试jenkins啦哈哈哈哈！！！！！")
 	zap.L().Info(fmt.Sprintf("config初始化成功: %#v\n", cfg))
 
 	// 封装 MySQL 初始化
