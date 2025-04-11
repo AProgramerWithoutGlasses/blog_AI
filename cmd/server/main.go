@@ -25,7 +25,7 @@ func main() {
 		return
 	}
 
-	// 初始化日志。。
+	// 初始化日志。。。
 	loggers.LogInit(cfg)
 	zap.L().Info(fmt.Sprintf("config初始化成功: %#v\n", cfg))
 
