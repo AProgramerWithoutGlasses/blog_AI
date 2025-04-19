@@ -3,6 +3,7 @@ module siwuai
 go 1.23.6
 
 require (
+	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/bits-and-blooms/bloom/v3 v3.7.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt/v4 v4.5.1

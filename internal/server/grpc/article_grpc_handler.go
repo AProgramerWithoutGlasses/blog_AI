@@ -7,6 +7,7 @@ import (
 	"siwuai/internal/app"
 	impl2 "siwuai/internal/app/impl"
 	service "siwuai/internal/domain/service/impl"
+	"siwuai/internal/infrastructure/cache"
 	"siwuai/internal/infrastructure/config"
 	"siwuai/internal/infrastructure/constant"
 	"siwuai/internal/infrastructure/persistence/impl"
@@ -18,10 +19,10 @@ type articleGRPCHandler struct {
 	repo app.ArticleAppServiceInterface
 }
 
-func NewArticleGRPCHandler(db *gorm.DB, cfg config.Config) pb.ArticleServiceServer {
+func NewArticleGRPCHandler(db *gorm.DB, cfg config.Config, cacheManager *cache.CacheManager, jc constant.JudgingCacheType) pb.ArticleServiceServer {
 	repo := impl.NewArticleRepository(db)
 	sign := constant.NewJudgingSign()
-	ds := service.NewArticleDomainService(repo, sign, cfg)
+	ds := service.NewArticleDomainService(repo, sign, cfg, cacheManager, jc)
 	cr := impl.NewMySQLCodeRepository(db)
 	as := impl2.NewArticleAppService(ds, cr)
 	return &articleGRPCHandler{

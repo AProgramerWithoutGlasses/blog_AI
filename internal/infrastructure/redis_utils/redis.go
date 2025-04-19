@@ -65,6 +65,14 @@ func (r *RedisClient) Set(key, value string, expiration time.Duration) error {
 	return nil
 }
 
+// Del 删除缓存值
+func (r *RedisClient) Del(key string) error {
+	if err := r.client.Del(r.ctx, key).Err(); err != nil {
+		return fmt.Errorf("r.client.Del() err: %v", err)
+	}
+	return nil
+}
+
 // TryLock 尝试获取分布式锁
 func (r *RedisClient) TryLock(key string, expiration time.Duration) (bool, error) {
 	ctx, cancel := context.WithTimeout(r.ctx, 5*time.Second) // 设置 5 秒超时

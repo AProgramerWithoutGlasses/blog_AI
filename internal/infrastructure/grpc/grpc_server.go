@@ -8,7 +8,9 @@ import (
 	"gorm.io/gorm"
 	"net"
 	serviceimpl "siwuai/internal/domain/service/impl" // 导入服务实现
+	"siwuai/internal/infrastructure/cache"
 	"siwuai/internal/infrastructure/config"
+	"siwuai/internal/infrastructure/constant"
 	"siwuai/internal/infrastructure/redis_utils"
 	server "siwuai/internal/server/grpc"
 	pb "siwuai/proto/article"
@@ -17,7 +19,7 @@ import (
 )
 
 // RunGRPCServer 启动 gRPC 服务器，并启用 token 验证
-func RunGRPCServer(port string, db *gorm.DB, rdb *redis_utils.RedisClient, bf *bloom.BloomFilter, cfg config.Config) error {
+func RunGRPCServer(port string, db *gorm.DB, rdb *redis_utils.RedisClient, bf *bloom.BloomFilter, cfg config.Config, cacheManager *cache.CacheManager, jc constant.JudgingCacheType) error {
 	lis, err := net.Listen("tcp", "0.0.0.0:"+port)
 	if err != nil {
 		return err
@@ -36,7 +38,7 @@ func RunGRPCServer(port string, db *gorm.DB, rdb *redis_utils.RedisClient, bf *b
 	pbcode.RegisterCodeServiceServer(grpcServer, server.NewCodeGRPCHandler(db, rdb, bf, cfg))
 
 	// 注册 ArticleService
-	pb.RegisterArticleServiceServer(grpcServer, server.NewArticleGRPCHandler(db, cfg))
+	pb.RegisterArticleServiceServer(grpcServer, server.NewArticleGRPCHandler(db, cfg, cacheManager, jc))
 
 	// 注册 TokenService
 	pbtoken.RegisterTokenServiceServer(grpcServer, server.NewTokenGRPCHandler(cfg))

@@ -1,15 +1,19 @@
 package impl
 
 import (
+	"encoding/json"
 	"fmt"
+	"go.uber.org/zap"
 	"regexp"
 	"siwuai/internal/domain/model/dto"
 	"siwuai/internal/domain/model/entity"
 	"siwuai/internal/domain/service"
+	"siwuai/internal/infrastructure/cache"
 	"siwuai/internal/infrastructure/config"
 	"siwuai/internal/infrastructure/constant"
 	"siwuai/internal/infrastructure/persistence"
 	"siwuai/internal/infrastructure/utils"
+	"strconv"
 	"strings"
 )
 
@@ -17,13 +21,17 @@ type articleDomainService struct {
 	repo persistence.ArticleRepositoryInterface
 	sign constant.JudgingSignInterface
 	cfg  config.Config
+	cm   cache.CacheManagerInterface
+	jct  constant.JudgingCacheType
 }
 
-func NewArticleDomainService(repo persistence.ArticleRepositoryInterface, sign constant.JudgingSignInterface, cfg config.Config) service.ArticleDomainServiceInterface {
+func NewArticleDomainService(repo persistence.ArticleRepositoryInterface, sign constant.JudgingSignInterface, cfg config.Config, cm cache.CacheManagerInterface, jct constant.JudgingCacheType) service.ArticleDomainServiceInterface {
 	return &articleDomainService{
 		repo: repo,
 		sign: sign,
 		cfg:  cfg,
+		cm:   cm,
+		jct:  jct,
 	}
 }
 
@@ -98,11 +106,37 @@ func (a *articleDomainService) SaveArticleID(key string, articleID uint) error {
 
 // GetArticleInfo 非首次获取文章的信息
 func (a *articleDomainService) GetArticleInfo(articleID uint) (*dto.ArticleSecond, error) {
-	articleInfo, err := a.repo.GetArticleInfo(articleID)
-	if err != nil {
-		return nil, err
+	// 从缓存获取数据，优先从本地缓存获取，然后是Redis
+	// strconv.FormatUint(uint64(articleID), 10)
+	data, err := a.cm.Get(fmt.Sprintf("article:%d", articleID))
+	if data == nil && err == nil {
+		// 查询数据库
+		articleInfo, err := a.repo.GetArticleInfo(articleID)
+		if err != nil {
+			return nil, err
+		}
+
+		articleDto := articleInfo.ConvertArticleEntityToDtoSecond()
+
+		jsonData, err := json.Marshal(*articleDto)
+		if err != nil {
+			zap.L().Error("文章信息序列化失败，设置Redis缓存失败", zap.Error(err))
+		}
+
+		// 设置缓存，同时设置本地缓存和Redis缓存
+		a.cm.Set(strconv.FormatUint(uint64(articleInfo.ArticleID), 10), jsonData, a.jct.GetArticleFlag())
+
+		// 返回数据
+		return articleDto, nil
 	}
-	return articleInfo.ConvertArticleEntityToDtoSecond(), nil
+
+	var articleDto dto.ArticleSecond
+	err = json.Unmarshal(data, &articleDto)
+	if err != nil {
+		zap.L().Error("文章信息反序列化失败", zap.Error(err))
+		return nil, fmt.Errorf("文章信息反序列化失败 -> %v", err)
+	}
+	return &articleDto, nil
 
 }
 

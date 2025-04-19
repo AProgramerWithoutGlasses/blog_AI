@@ -90,6 +90,9 @@ func (a *articleRepository) GetArticleInfo(articleID uint) (*entity.Article, err
 	} else if result.RowsAffected == 0 {
 		return nil, fmt.Errorf("查询文章信息失败")
 	}
+
+	// 更新该记录被访问的次数
+
 	return &articleInfo, nil
 }
 

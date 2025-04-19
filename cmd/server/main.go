@@ -6,10 +6,13 @@ import (
 	"go.uber.org/zap"
 	"os"
 	"os/signal"
+	"siwuai/internal/infrastructure/cache"
+	"siwuai/internal/infrastructure/constant"
 	"siwuai/internal/infrastructure/loggers"
 	"siwuai/internal/infrastructure/redis_utils"
 	"siwuai/internal/infrastructure/utils"
 	"syscall"
+	"time"
 
 	"siwuai/internal/infrastructure/config"
 	"siwuai/internal/infrastructure/etcd"
@@ -54,6 +57,17 @@ func main() {
 		return
 	}
 
+	// 初始化缓存变量
+	jc := constant.NewJudgingCache()
+
+	// 创建本地缓存，设置1小时的默认过期时间
+	localCache := cache.NewBigCacheClient(1*time.Hour, 1024, 128) // 1MB最大条目大小，1024个分片
+
+	// 初始化多级缓存管理器
+	cacheManager := cache.NewCacheManager(localCache, db, redisClient, bf, cfg, jc)
+
+	defer cacheManager.Close()
+
 	// etcd 注册初始化，使用配置文件中的 etcd 配置
 	etcdCfg := cfg.Etcd
 	etcdRegistry, err := etcd.NewEtcdRegistry(etcdCfg.Endpoints, etcdCfg.ServiceName, etcdCfg.ServiceAddr, etcdCfg.TTL)
@@ -90,7 +104,7 @@ func main() {
 
 	// 启动 gRPC 服务，使用配置文件中指定的端口（例如：cfg.Server.Port）
 	port := cfg.Server.Port
-	if err = grpc.RunGRPCServer(port, db, redisClient, bf, cfg); err != nil {
+	if err = grpc.RunGRPCServer(port, db, redisClient, bf, cfg, cacheManager, jc); err != nil {
 		zap.L().Error(fmt.Sprintf("启动 gRPC 服务器失败: %v", err))
 		return
 	}
