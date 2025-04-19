@@ -17,8 +17,8 @@ redis:
 
 etcd:
   endpoints:
-    - "8.154.36.180:2378"
-  serviceName: "services/siwuai"
+    - "8.154.36.180:2379"
+  serviceName: "/services/siwuai"
   serviceAddr: "8.154.36.180:50051"
   ttl: 5
 
