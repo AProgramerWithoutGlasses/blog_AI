@@ -22,7 +22,7 @@ import (
 
 func main() {
 	// 加载配置文件
-	cfg, err := config.LoadConfig("configs", "local")
+	cfg, err := config.LoadConfig("configs", "dev")
 	if err != nil {
 		fmt.Printf("加载配置文件失败: %v\n", err)
 		return
