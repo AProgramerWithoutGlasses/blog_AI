@@ -50,11 +50,15 @@ func main() {
 	zap.L().Info(" 初始化 Redis 成功")
 
 	// 初始化布隆过滤器（假设预计存储 100 万条记录，误判率 0.01）
-	bf, err := utils.LoadBloomFilter(db)
+	// 初始化布隆过滤器管理器
+	bfm, err := utils.LoadBloomFilter(db)
 	if err != nil {
 		zap.L().Error(fmt.Sprintf("加载布隆过滤器失败 utils.LoadBloomFilter() %v", err))
 		return
 	}
+
+	// 获取布隆过滤器
+	bf := bfm.GetBloomFilter()
 
 	// 初始化缓存变量
 	jc := constant.NewJudgingCache()
@@ -63,7 +67,7 @@ func main() {
 	localCache := cache.NewBigCacheClient(1*time.Hour, 1024, 128) // 1MB最大条目大小，1024个分片
 
 	// 初始化多级缓存管理器
-	cacheManager := cache.NewCacheManager(localCache, db, redisClient, bf, cfg, jc)
+	cacheManager := cache.NewCacheManager(localCache, db, redisClient, cfg, jc, bfm)
 
 	defer cacheManager.Close()
 

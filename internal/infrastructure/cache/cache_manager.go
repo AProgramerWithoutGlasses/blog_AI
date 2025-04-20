@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"siwuai/internal/infrastructure/constant"
+	"siwuai/internal/infrastructure/utils"
 	"sync"
 	"time"
 
-	"github.com/bits-and-blooms/bloom/v3"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"siwuai/internal/domain/model/entity"
@@ -42,15 +42,16 @@ type CacheManagerInterface interface {
 type CacheManager struct {
 	localCache  LocalCache               // 本地缓存（一级缓存）
 	redisClient *redis_utils.RedisClient // Redis缓存（二级缓存）
-	bloomFilter *bloom.BloomFilter       // 布隆过滤器
-	db          *gorm.DB                 // 数据库连接
-	config      config.Config            // 配置信息
-	mu          sync.RWMutex             // 读写锁
-	jct         constant.JudgingCacheType
+	//bloomFilter *bloom.BloomFilter                // 布隆过滤器
+	db     *gorm.DB                          // 数据库连接
+	config config.Config                     // 配置信息
+	mu     sync.RWMutex                      // 读写锁
+	jct    constant.JudgingCacheType         // 缓存类型
+	bfm    utils.BloomFilterManagerInterface // 布隆过滤器管理器
 }
 
 // NewCacheManager 创建一个新的缓存管理器
-func NewCacheManager(localCache LocalCache, db *gorm.DB, redisClient *redis_utils.RedisClient, bf *bloom.BloomFilter, cfg config.Config, jct constant.JudgingCacheType) *CacheManager {
+func NewCacheManager(localCache LocalCache, db *gorm.DB, redisClient *redis_utils.RedisClient, cfg config.Config, jct constant.JudgingCacheType, bfm utils.BloomFilterManagerInterface) *CacheManager {
 	// 创建本地缓存，设置1小时的默认过期时间
 	//localCache, err := NewBigCacheClient(1*time.Hour, 1024*1024, 1024) // 1MB最大条目大小，1024个分片
 	//if err != nil {
@@ -60,10 +61,11 @@ func NewCacheManager(localCache LocalCache, db *gorm.DB, redisClient *redis_util
 	cm := &CacheManager{
 		localCache:  localCache,
 		redisClient: redisClient,
-		bloomFilter: bf,
-		db:          db,
-		config:      cfg,
-		jct:         jct,
+		//bloomFilter: bf,
+		db:     db,
+		config: cfg,
+		jct:    jct,
+		bfm:    bfm,
 	}
 
 	// 启动缓存预热
@@ -79,11 +81,19 @@ func (cm *CacheManager) Get(key string) ([]byte, error) {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
 
+	//// 1. 检查布隆过滤器
+	//if !cm.bloomFilter.Test([]byte(key)) {
+	//	zap.L().Debug("布隆过滤器未命中", zap.String("key", key))
+	//	return nil, nil
+	//}F
+
 	// 1. 检查布隆过滤器
-	if !cm.bloomFilter.Test([]byte(key)) {
+	if !cm.bfm.Test([]byte(key)) {
 		zap.L().Debug("布隆过滤器未命中", zap.String("key", key))
 		return nil, nil
 	}
+
+	zap.L().Debug("布隆过滤器命中", zap.String("key", key))
 
 	// 2. 检查本地缓存
 	data, err := cm.localCache.Get(key)
@@ -128,7 +138,8 @@ func (cm *CacheManager) Set(key string, value []byte, cacheType constant.CacheTy
 	}
 
 	// 3. 更新布隆过滤器
-	cm.bloomFilter.Add([]byte(key))
+	//cm.bloomFilter.Add([]byte(key))
+	cm.bfm.Add([]byte(key))
 
 	zap.L().Debug("缓存设置成功",
 		zap.String("key", key),
