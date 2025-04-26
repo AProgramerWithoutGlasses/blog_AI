@@ -1,0 +1,13 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="GoDfaErrorMayBeNotNil" enabled="true" level="WARNING" enabled_by_default="true">
+      <methods>
+        <method importPath="grpc-ddd-demo/internal/app/codecase" receiver="CodeUseCase" name="ExplainCode" />
+        <method importPath="siwuai/internal/domain/service/impl" receiver="*codeDomainService" name="GetAnswer" />
+        <method importPath="go.etcd.io/etcd/client/v3" receiver="Client" name="Status" />
+      </methods>
+    </inspection_tool>
+    <inspection_tool class="GoDirectComparisonOfErrors" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
+  </profile>
+</component>

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/grpc-ddd-demo.iml" filepath="$PROJECT_DIR$/.idea/grpc-ddd-demo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/siwuai.iml" filepath="$PROJECT_DIR$/.idea/siwuai.iml" />
     </modules>
   </component>
 </project>

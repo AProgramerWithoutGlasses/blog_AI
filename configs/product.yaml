@@ -1,0 +1,39 @@
+server:
+  port: "50051"
+
+mysql:
+  host: "8.154.36.180"
+  port: 3306
+  username: "root"
+  password: "123456"
+  dbname: "siwuai"
+
+redis:
+  addr: "8.154.36.180:6379"
+  password: "123456"
+  port: 6379
+  db: 0
+  timeout: 5
+
+etcd:
+  endpoints:
+    - "8.154.36.180:2379"
+  serviceName: "/services/siwuai"
+  serviceAddr: "8.154.36.180:50051"
+  ttl: 5
+
+token:
+  secretKey: "123456"
+  generateTokenKey: "123456"
+
+log:
+  logPath: "./logs"
+  appName: "siwuai"
+  level: 0
+
+llm:
+  apiKey: "18e25f60-6aff-418f-96fe-55b8cee6a273"
+  model: "deepseek-r1-250120"
+  baseURL: "https://ark.cn-beijing.volces.com/api/v3"
+  temperatureCode: 0.0
+  temperatureArticle: 1.0
