@@ -38,7 +38,9 @@ func Generate(flag constant.AICode, value interface{}, cfg config.Config) (answe
 		promptTemplate = prompts.NewChatPromptTemplate([]prompts.MessageFormatter{
 			prompts.NewSystemMessagePromptTemplate("你是一个专业的技术文章分析助手", []string{}),
 			//prompts.NewHumanMessagePromptTemplate("请根据以下文章内容提取摘要和总结，并根据给定的标签匹配文章的标签。回答中应仅仅只包含三部分: 摘要、总结、匹配的标签，其他多余部分都不要。文章内容如下：\n{{.article}}\n\n标签列表：{{.tags}}\n\n摘要：\n{{.abstract}}\n\n总结：\n{{.summary}}\n\n匹配的标签：\n{{.matchedTags}}", []string{"article", "abstract", "summary", "tags", "matchedTags"}),
-			prompts.NewHumanMessagePromptTemplate("请根据以下文章内容提取摘要和总结，并根据给定的标签匹配文章的标签。回答中应仅仅只包含三部分: 摘要、总结、匹配的标签，其他多余部分都不要。文章内容如下：\n{{.article}}\n\n标签列表：{{.tags}}}", []string{"article", "tags"}),
+			prompts.NewHumanMessagePromptTemplate("请根据以下文章内容提取摘要和总结，并根据给定的标签匹配文章的标签。回答中应仅仅只包含三部分: 摘要、总结、匹配的标签，其他多余部分都不要。格式如下"+
+				"摘要: 文章分析了 GORM 框架中四个核心方法的行为特征：1) First() 未查询到数据时返回 gorm.ErrRecordNotFound；2) Create() 插入失败时错误类型包含约束冲突/数据类型不匹配/连接问题；3) Update() 数据未变化时 RowsAffected 返回 0；4) Delete() 数据不存在时 error 为 nil 但 RowsAffected 为 0。\n\n总结: 文章详细解构了 GORM ORM 框架在 CRUD 操作中的异常处理机制，重点阐述了不同方法在数据不存在/数据冲突/数据未变更等场景下的返回值特征，并提供了错误类型判断和事务回滚的实践建议。\n\n匹配的标签: 后端, Gorm"+
+				"文章内容如下：\n{{.article}}\n\n标签列表：{{.tags}}}", []string{"article", "tags"}),
 		})
 
 		// 格式化输入

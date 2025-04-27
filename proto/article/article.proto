@@ -18,6 +18,7 @@ service articleService {
 message GetArticleInfoFirstRequest {
   string content = 1; // 文章的全部内容
   repeated string tags = 2; // 所有标签, 用于给文章匹配相应的标签
+  uint32 articleID = 3; // 文章ID
 }
 
 message GetArticleInfoFirstResponse {

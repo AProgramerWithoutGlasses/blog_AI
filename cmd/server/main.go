@@ -22,7 +22,7 @@ import (
 
 func main() {
 	// 加载配置文件
-	cfg, err := config.LoadConfig("configs", "dev")
+	cfg, err := config.LoadConfig("configs", "local")
 	if err != nil {
 		fmt.Printf("加载配置文件失败: %v\n", err)
 		return
@@ -64,7 +64,7 @@ func main() {
 	jc := constant.NewJudgingCache()
 
 	// 创建本地缓存，设置1小时的默认过期时间
-	localCache := cache.NewBigCacheClient(1*time.Hour, 1024, 128) // 1MB最大条目大小，1024个分片
+	localCache := cache.NewBigCacheClient(1*time.Hour, 128, 64) // 1MB最大条目大小，1024个分片
 
 	// 初始化多级缓存管理器
 	cacheManager := cache.NewCacheManager(localCache, db, redisClient, cfg, jc, bfm)
