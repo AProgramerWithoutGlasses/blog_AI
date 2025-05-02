@@ -87,9 +87,11 @@ func (a *articleRepository) GetArticleInfo(articleID uint) (*entity.Article, err
 	result := a.db.Model(&entity.Article{}).Where("article_id = ?", articleID).Scan(&articleInfo)
 	if result.Error != nil {
 		return nil, fmt.Errorf("(a *articleRepository) GetArticleInfo -> %v", result.Error)
-	} else if result.RowsAffected == 0 {
-		return nil, fmt.Errorf("查询文章信息失败")
 	}
+
+	//else if result.RowsAffected == 0 {
+	//	return nil, fmt.Errorf("查询文章信息失败")
+	//}
 
 	// 更新该记录被访问的次数
 

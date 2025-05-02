@@ -54,6 +54,10 @@ func (a *articleDomainService) AskAI(key string, ap *dto.ArticlePrompt) (*dto.Ar
 
 	//fmt.Println("stream:", stream)
 
+	if answer["text"] == nil {
+		return &dto.ArticleFirst{}, nil
+	}
+
 	// 提取数据
 	articleFirst := a.ParseAnswer(answer["text"].(string))
 	//articleFirst := a.ParseAnswer(answer)
