@@ -20,7 +20,7 @@ import (
 	mysqlInfra "siwuai/internal/infrastructure/persistence"
 )
 
-// 111
+// 1111
 func main() {
 	// 加载配置文件
 	cfg, err := config.LoadConfig("configs", "dev")
