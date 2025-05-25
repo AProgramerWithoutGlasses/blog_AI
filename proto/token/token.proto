@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package token;
+
+option go_package = "./token";
+
+// 请求与响应消息
+message TokenRequest {
+  string GenerateTokenKey = 1; // 生成token时需要验证的密钥
+}
+
+message TokenResponse {
+  string Token = 1;  // 令牌
+}
+
+// 定义代码解释服务
+service TokenService {
+  rpc GenerateToken(TokenRequest) returns (TokenResponse);
+}
