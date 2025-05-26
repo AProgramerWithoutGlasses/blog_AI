@@ -20,7 +20,6 @@ import (
 	mysqlInfra "siwuai/internal/infrastructure/persistence"
 )
 
-// 11112
 func main() {
 	// 加载配置文件
 	cfg, err := config.LoadConfig("configs", "dev")
@@ -29,7 +28,7 @@ func main() {
 		return
 	}
 
-	// 初始化日志。。。。
+	// 初始化日志
 	loggers.LogInit(cfg)
 	zap.L().Info(fmt.Sprintf("config初始化成功: %#v\n", cfg))
 
