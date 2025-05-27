@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option go_package = "siwuai/proto/question";
+
+package question;
+
+// 定义问题标题生成相关的 gRPC 服务
+service QuestionService {
+  // 根据问题内容生成多个标题
+  rpc GenerateQuestionTitles (GenerateQuestionTitlesRequest) returns (GenerateQuestionTitlesResponse);
+}
+
+// 生成标题的请求参数
+message GenerateQuestionTitlesRequest {
+  string content = 1;       // 问题的完整内容（必填）
+  uint32 questionID = 2;    // 问题ID
+}
+
+// 生成标题的响应结果
+message GenerateQuestionTitlesResponse {
+  string Key = 1;                  // 哈希值（用于唯一标识本次生成任务）
+  repeated string titles = 2;      // 生成的标题列表（至少返回1个）
+  int32 total = 3;                 // 生成的标题总数（与 titles 长度一致）
+  string status = 4;               // 生成状态（如 "success"/"failed"）
+  repeated string tags = 5;        // 问题关联的标签（可选，用于优化生成效果）
+}

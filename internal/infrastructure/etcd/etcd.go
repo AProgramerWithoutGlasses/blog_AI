@@ -3,8 +3,9 @@ package etcd
 import (
 	"context"
 	"fmt"
-	"go.uber.org/zap"
 	"time"
+
+	"go.uber.org/zap"
 
 	clientv3 "go.etcd.io/etcd/client/v3"
 )

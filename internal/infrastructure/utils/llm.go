@@ -3,17 +3,19 @@ package utils
 import (
 	"context"
 	"fmt"
-	"github.com/tmc/langchaingo/chains"
-	"go.uber.org/zap"
 	"siwuai/internal/infrastructure/config"
 	"siwuai/internal/infrastructure/constant"
 	"strings"
 	"time"
 
+	"github.com/tmc/langchaingo/chains"
+	"go.uber.org/zap"
+
+	"siwuai/internal/domain/model/dto"
+
 	"github.com/tmc/langchaingo/llms"
 	"github.com/tmc/langchaingo/llms/openai"
 	"github.com/tmc/langchaingo/prompts"
-	"siwuai/internal/domain/model/dto"
 )
 
 // Generate 函数
@@ -48,6 +50,30 @@ func Generate(flag constant.AICode, value interface{}, cfg config.Config) (answe
 		}
 	} else if flag == constant.CodeAICode {
 
+	} else if flag == constant.QuestionAICode {
+		// 新增：处理问题AI生成标题和标签
+		q := value.(*dto.QuestionPrompt)
+		// 构造prompt和输入参数
+		promptTemplate = prompts.NewChatPromptTemplate([]prompts.MessageFormatter{
+			prompts.NewSystemMessagePromptTemplate("你是一个专业的问题标题和标签生成助手", []string{}),
+			prompts.NewHumanMessagePromptTemplate("请根据以下问题内容生成3个合适的标题，并为该问题匹配3个相关标签。问题内容如下：\n{{.content}}", []string{"content"}),
+		})
+		input = map[string]any{
+			"content": q.Content,
+		}
+		// 调用LLM
+		chain := chains.NewLLMChain(llm, promptTemplate)
+		result, err := chain.Call(context.Background(), input)
+		if err != nil {
+			return nil, err
+		}
+		// 假设AI返回格式为：{"titles":["标题1","标题2"],"tags":["标签1","标签2"],"key":"xxx"}
+		answer = map[string]any{
+			"titles": result["titles"],
+			"tags":   result["tags"],
+			"key":    result["key"],
+		}
+		return answer, nil
 	} else {
 		return nil, fmt.Errorf("flag的值超出范围")
 	}
