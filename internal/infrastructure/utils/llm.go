@@ -40,7 +40,12 @@ func Generate(flag constant.AICode, value interface{}, cfg config.Config) (answe
 		promptTemplate = prompts.NewChatPromptTemplate([]prompts.MessageFormatter{
 			prompts.NewSystemMessagePromptTemplate("你是一个专业的技术文章分析助手", []string{}),
 			//prompts.NewHumanMessagePromptTemplate("请根据以下文章内容提取摘要和总结，并根据给定的标签匹配文章的标签。回答中应仅仅只包含三部分: 摘要、总结、匹配的标签，其他多余部分都不要。文章内容如下：\n{{.article}}\n\n标签列表：{{.tags}}\n\n摘要：\n{{.abstract}}\n\n总结：\n{{.summary}}\n\n匹配的标签：\n{{.matchedTags}}", []string{"article", "abstract", "summary", "tags", "matchedTags"}),
-			prompts.NewHumanMessagePromptTemplate("请根据以下文章内容提取摘要和总结，并根据给定的标签匹配文章的标签。回答中应仅仅只包含三部分: 摘要、总结、匹配的标签，其他多余部分都不要。文章内容如下：\n{{.article}}\n\n标签列表：{{.tags}}}", []string{"article", "tags"}),
+			prompts.NewHumanMessagePromptTemplate(
+				"请根据以下文章内容提取摘要和总结，并根据给定的标签匹配文章的标签。回答中应仅仅只包含三部分: 摘要、总结、匹配的标签，其他多余部分都不要。格式如下"+
+					"摘要: \n\n总结: \n\n匹配的标签:"+
+					"当文章内容无法识别或为空，未提供有效信息，或提供的文本为无意义字符，无法提取实质性内容或进行总结时，返回nil即可，其他的什么都不需要返回。格式如下"+
+					"nil"+
+					"文章内容如下：\n{{.article}}\n\n标签列表：{{.tags}}}", []string{"article", "tags"}),
 		})
 
 		// 格式化输入

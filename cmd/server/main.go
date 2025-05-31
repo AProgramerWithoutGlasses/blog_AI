@@ -28,7 +28,7 @@ func main() {
 		return
 	}
 
-	// 初始化日志。。。。
+	// 初始化日志
 	loggers.LogInit(cfg)
 	zap.L().Info(fmt.Sprintf("config初始化成功: %#v\n", cfg))
 
@@ -64,7 +64,7 @@ func main() {
 	jc := constant.NewJudgingCache()
 
 	// 创建本地缓存，设置1小时的默认过期时间
-	localCache := cache.NewBigCacheClient(1*time.Hour, 1024, 128) // 1MB最大条目大小，1024个分片
+	localCache := cache.NewBigCacheClient(1*time.Hour, 128, 64) // 1MB最大条目大小，1024个分片
 
 	// 初始化多级缓存管理器
 	cacheManager := cache.NewCacheManager(localCache, db, redisClient, cfg, jc, bfm)

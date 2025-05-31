@@ -18,7 +18,7 @@ func Hash(question string) (hashVal string, err error) {
 	}
 	// 使用 hex.EncodeToString 将二进制哈希结果转换为十六进制字符串
 	hashVal = hex.EncodeToString(hasher.Sum(nil))
-	fmt.Printf("\n问题: %s\n", question)
+	//fmt.Printf("\n问题: %s\n", question)
 	fmt.Printf("Hash值: %s\n", hashVal)
 	return
 }
