@@ -53,15 +53,19 @@ func (h *questionGRPCHandler) GenerateQuestionTitles(ctx context.Context, req *p
 	// 解析 AI 返回结果
 	titles, _ := result["titles"].([]string)
 	tags, _ := result["tags"].([]string)
-	key, _ := result["key"].(string)
-	if key == "" {
-		key = "ai-question-key"
-	}
+
+	// 确保至少有一个标题
 	if len(titles) == 0 {
 		titles = []string{"AI生成标题"}
 	}
+
+	// 确保标签不为nil
+	if tags == nil {
+		tags = []string{}
+	}
+
 	resp := &pbquestion.GenerateQuestionTitlesResponse{
-		Key:    key,
+		Key:    "ai-question-key",
 		Titles: titles,
 		Total:  int32(len(titles)),
 		Status: "success",

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"siwuai/internal/infrastructure/config"
 	"siwuai/internal/infrastructure/constant"
@@ -60,8 +61,21 @@ func Generate(flag constant.AICode, value interface{}, cfg config.Config) (answe
 		q := value.(*dto.QuestionPrompt)
 		// 构造prompt和输入参数
 		promptTemplate = prompts.NewChatPromptTemplate([]prompts.MessageFormatter{
-			prompts.NewSystemMessagePromptTemplate("你是一个专业的问题标题和标签生成助手", []string{}),
-			prompts.NewHumanMessagePromptTemplate("请根据以下问题内容生成3个合适的标题，并为该问题匹配3个相关标签。问题内容如下：\n{{.content}}", []string{"content"}),
+			prompts.NewSystemMessagePromptTemplate("你是一个专业的问题标题和标签生成助手。你必须严格按照指定的JSON格式返回结果，不要添加任何额外的文字说明。", []string{}),
+			prompts.NewHumanMessagePromptTemplate(
+				"请根据以下问题内容生成3个合适的标题，并为该问题匹配3个相关标签。\n"+
+					"你必须严格按照以下JSON格式返回结果，不要添加任何其他内容：\n"+
+					"{\n"+
+					"  \"titles\": [\"标题1\", \"标题2\", \"标题3\"],\n"+
+					"  \"tags\": [\"标签1\", \"标签2\", \"标签3\"]\n"+
+					"}\n"+
+					"注意：\n"+
+					"1. 必须返回3个标题和3个标签\n"+
+					"2. 不要添加任何额外的说明文字\n"+
+					"3. 不要使用反引号包裹JSON\n"+
+					"4. 确保返回的是有效的JSON格式\n"+
+					"问题内容如下：\n{{.content}}",
+				[]string{"content"}),
 		})
 		input = map[string]any{
 			"content": q.Content,
@@ -72,11 +86,56 @@ func Generate(flag constant.AICode, value interface{}, cfg config.Config) (answe
 		if err != nil {
 			return nil, err
 		}
-		// 假设AI返回格式为：{"titles":["标题1","标题2"],"tags":["标签1","标签2"],"key":"xxx"}
+
+		// 解析AI返回的JSON字符串
+		var aiResponse struct {
+			Titles []string `json:"titles"`
+			Tags   []string `json:"tags"`
+		}
+
+		if resultStr, ok := result["text"].(string); ok {
+			// 记录原始返回内容
+			zap.L().Info("AI原始返回内容",
+				zap.String("raw_response", resultStr))
+
+			// 清理返回的字符串，移除可能的反引号和其他无效字符
+			resultStr = strings.TrimSpace(resultStr)
+			resultStr = strings.Trim(resultStr, "`")
+
+			// 记录清理后的内容
+			zap.L().Info("清理后的内容",
+				zap.String("cleaned_response", resultStr))
+
+			// 尝试解析JSON
+			if err := json.Unmarshal([]byte(resultStr), &aiResponse); err != nil {
+				zap.L().Error("解析AI返回结果失败",
+					zap.String("raw_response", resultStr),
+					zap.Error(err))
+				// 如果解析失败，使用默认值
+				aiResponse.Titles = []string{"AI生成标题"}
+				aiResponse.Tags = []string{}
+			} else {
+				// 记录成功解析的内容
+				zap.L().Info("成功解析AI返回内容",
+					zap.Strings("titles", aiResponse.Titles),
+					zap.Strings("tags", aiResponse.Tags))
+			}
+		} else {
+			zap.L().Error("无法获取AI返回的文本内容")
+			// 如果无法获取文本结果，使用默认值
+			aiResponse.Titles = []string{"AI生成标题"}
+			aiResponse.Tags = []string{}
+		}
+
+		// 确保至少有一个标题
+		if len(aiResponse.Titles) == 0 {
+			aiResponse.Titles = []string{"AI生成标题"}
+		}
+
 		answer = map[string]any{
-			"titles": result["titles"],
-			"tags":   result["tags"],
-			"key":    result["key"],
+			"titles": aiResponse.Titles,
+			"tags":   aiResponse.Tags,
+			"key":    "ai-question-key",
 		}
 		return answer, nil
 	} else {
