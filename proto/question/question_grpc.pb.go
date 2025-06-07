@@ -4,6 +4,8 @@
 // - protoc             v6.31.0--rc2
 // source: question.proto
 
+// protobuf 包名（避免命名冲突）
+
 package question
 
 import (
@@ -20,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	QuestionService_GenerateQuestionTitles_FullMethodName = "/question.QuestionService/GenerateQuestionTitles"
+	QuestionService_GetAnswer_FullMethodName              = "/question.QuestionService/GetAnswer"
 )
 
 // QuestionServiceClient is the client API for QuestionService service.
@@ -30,6 +33,7 @@ const (
 type QuestionServiceClient interface {
 	// 根据问题内容生成多个标题
 	GenerateQuestionTitles(ctx context.Context, in *GenerateQuestionTitlesRequest, opts ...grpc.CallOption) (*GenerateQuestionTitlesResponse, error)
+	GetAnswer(ctx context.Context, in *GetAnswerRequest, opts ...grpc.CallOption) (*GetAnswerResponse, error)
 }
 
 type questionServiceClient struct {
@@ -50,6 +54,16 @@ func (c *questionServiceClient) GenerateQuestionTitles(ctx context.Context, in *
 	return out, nil
 }
 
+func (c *questionServiceClient) GetAnswer(ctx context.Context, in *GetAnswerRequest, opts ...grpc.CallOption) (*GetAnswerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetAnswerResponse)
+	err := c.cc.Invoke(ctx, QuestionService_GetAnswer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QuestionServiceServer is the server API for QuestionService service.
 // All implementations must embed UnimplementedQuestionServiceServer
 // for forward compatibility.
@@ -58,6 +72,7 @@ func (c *questionServiceClient) GenerateQuestionTitles(ctx context.Context, in *
 type QuestionServiceServer interface {
 	// 根据问题内容生成多个标题
 	GenerateQuestionTitles(context.Context, *GenerateQuestionTitlesRequest) (*GenerateQuestionTitlesResponse, error)
+	GetAnswer(context.Context, *GetAnswerRequest) (*GetAnswerResponse, error)
 	mustEmbedUnimplementedQuestionServiceServer()
 }
 
@@ -70,6 +85,9 @@ type UnimplementedQuestionServiceServer struct{}
 
 func (UnimplementedQuestionServiceServer) GenerateQuestionTitles(context.Context, *GenerateQuestionTitlesRequest) (*GenerateQuestionTitlesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerateQuestionTitles not implemented")
+}
+func (UnimplementedQuestionServiceServer) GetAnswer(context.Context, *GetAnswerRequest) (*GetAnswerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAnswer not implemented")
 }
 func (UnimplementedQuestionServiceServer) mustEmbedUnimplementedQuestionServiceServer() {}
 func (UnimplementedQuestionServiceServer) testEmbeddedByValue()                         {}
@@ -110,6 +128,24 @@ func _QuestionService_GenerateQuestionTitles_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _QuestionService_GetAnswer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAnswerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QuestionServiceServer).GetAnswer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QuestionService_GetAnswer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QuestionServiceServer).GetAnswer(ctx, req.(*GetAnswerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // QuestionService_ServiceDesc is the grpc.ServiceDesc for QuestionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -120,6 +156,10 @@ var QuestionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GenerateQuestionTitles",
 			Handler:    _QuestionService_GenerateQuestionTitles_Handler,
+		},
+		{
+			MethodName: "GetAnswer",
+			Handler:    _QuestionService_GetAnswer_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -3,9 +3,10 @@ package constant
 type AICode string
 
 const (
-	ArticleAICode  AICode = "article"
-	CodeAICode     AICode = "code"
-	QuestionAICode AICode = "question"
+	ArticleAICode      AICode = "article"
+	CodeAICode         AICode = "code"
+	QuestionAICode     AICode = "question"
+	QuestionAnswerCode AICode = "question_answer"
 )
 
 type JudgingSignInterface interface {

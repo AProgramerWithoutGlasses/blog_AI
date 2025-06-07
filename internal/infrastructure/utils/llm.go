@@ -138,6 +138,70 @@ func Generate(flag constant.AICode, value interface{}, cfg config.Config) (answe
 			"key":    "ai-question-key",
 		}
 		return answer, nil
+	} else if flag == constant.QuestionAnswerCode {
+		// 处理问题AI生成答案
+		q := value.(*dto.QuestionPrompt)
+		// 构造prompt和输入参数
+		promptTemplate = prompts.NewChatPromptTemplate([]prompts.MessageFormatter{
+			prompts.NewSystemMessagePromptTemplate("你是一个专业的问题回答助手。你必须严格按照指定的JSON格式返回结果，不要添加任何额外的文字说明。", []string{}),
+			prompts.NewHumanMessagePromptTemplate(
+				"请根据以下问题内容生成一个专业、准确、详细的回答。\n"+
+					"你必须严格按照以下JSON格式返回结果，不要添加任何其他内容：\n"+
+					"{\n"+
+					"  \"answer\": \"你的回答内容\"\n"+
+					"}\n"+
+					"注意：\n"+
+					"1. 回答要专业、准确、详细\n"+
+					"2. 不要添加任何额外的说明文字\n"+
+					"3. 不要使用反引号包裹JSON\n"+
+					"4. 确保返回的是有效的JSON格式\n"+
+					"问题内容如下：\n{{.content}}",
+				[]string{"content"}),
+		})
+		input = map[string]any{
+			"content": q.Content,
+		}
+		// 调用LLM
+		chain := chains.NewLLMChain(llm, promptTemplate)
+		result, err := chain.Call(context.Background(), input)
+		if err != nil {
+			return nil, err
+		}
+
+		// 解析AI返回的JSON字符串
+		var aiResponse struct {
+			Answer string `json:"answer"`
+		}
+
+		if resultStr, ok := result["text"].(string); ok {
+			// 记录原始返回内容
+			zap.L().Info("AI原始返回内容",
+				zap.String("raw_response", resultStr))
+
+			// 清理返回的字符串，移除可能的反引号和其他无效字符
+			resultStr = strings.TrimSpace(resultStr)
+			resultStr = strings.Trim(resultStr, "`")
+
+			// 记录清理后的内容
+			zap.L().Info("清理后的内容",
+				zap.String("cleaned_response", resultStr))
+
+			// 尝试解析JSON
+			if err := json.Unmarshal([]byte(resultStr), &aiResponse); err != nil {
+				zap.L().Error("解析AI返回结果失败",
+					zap.String("raw_response", resultStr),
+					zap.Error(err))
+				return nil, err
+			}
+		} else {
+			zap.L().Error("无法获取AI返回的文本内容")
+			return nil, fmt.Errorf("无法获取AI返回的文本内容")
+		}
+
+		answer = map[string]any{
+			"answer": aiResponse.Answer,
+		}
+		return answer, nil
 	} else {
 		return nil, fmt.Errorf("flag的值超出范围")
 	}

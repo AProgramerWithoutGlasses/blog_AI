@@ -73,3 +73,32 @@ func (h *questionGRPCHandler) GenerateQuestionTitles(ctx context.Context, req *p
 	}
 	return resp, nil
 }
+
+// GetAnswer 实现 gRPC 方法
+func (h *questionGRPCHandler) GetAnswer(ctx context.Context, req *pbquestion.GetAnswerRequest) (*pbquestion.GetAnswerResponse, error) {
+	zap.L().Info("GetAnswer called", zap.String("content", req.Content))
+
+	// 构造 AI 请求参数
+	questionPrompt := &dto.QuestionPrompt{
+		Content: req.Content,
+	}
+
+	// 调用 AI 生成答案
+	result, err := utils.Generate(constant.QuestionAnswerCode, questionPrompt, h.cfg)
+	if err != nil {
+		zap.L().Error("AI 生成答案失败", zap.Error(err))
+		return nil, err
+	}
+
+	// 解析 AI 返回结果
+	answer, ok := result["answer"].(string)
+	if !ok {
+		zap.L().Error("AI 返回结果格式错误")
+		return nil, err
+	}
+
+	resp := &pbquestion.GetAnswerResponse{
+		Content: answer,
+	}
+	return resp, nil
+}
