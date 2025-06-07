@@ -4,6 +4,8 @@
 // 	protoc        v6.31.0--rc2
 // source: question.proto
 
+// protobuf 包名（避免命名冲突）
+
 package question
 
 import (
@@ -74,6 +76,51 @@ func (x *GenerateQuestionTitlesRequest) GetQuestionID() uint32 {
 	return 0
 }
 
+// 获取答案的请求参数
+type GetAnswerRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Content       string                 `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"` // 问题的完整内容（必填）;
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetAnswerRequest) Reset() {
+	*x = GetAnswerRequest{}
+	mi := &file_question_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAnswerRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAnswerRequest) ProtoMessage() {}
+
+func (x *GetAnswerRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_question_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAnswerRequest.ProtoReflect.Descriptor instead.
+func (*GetAnswerRequest) Descriptor() ([]byte, []int) {
+	return file_question_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *GetAnswerRequest) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
 // 生成标题的响应结果
 type GenerateQuestionTitlesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -88,7 +135,7 @@ type GenerateQuestionTitlesResponse struct {
 
 func (x *GenerateQuestionTitlesResponse) Reset() {
 	*x = GenerateQuestionTitlesResponse{}
-	mi := &file_question_proto_msgTypes[1]
+	mi := &file_question_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -100,7 +147,7 @@ func (x *GenerateQuestionTitlesResponse) String() string {
 func (*GenerateQuestionTitlesResponse) ProtoMessage() {}
 
 func (x *GenerateQuestionTitlesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_question_proto_msgTypes[1]
+	mi := &file_question_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -113,7 +160,7 @@ func (x *GenerateQuestionTitlesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenerateQuestionTitlesResponse.ProtoReflect.Descriptor instead.
 func (*GenerateQuestionTitlesResponse) Descriptor() ([]byte, []int) {
-	return file_question_proto_rawDescGZIP(), []int{1}
+	return file_question_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *GenerateQuestionTitlesResponse) GetKey() string {
@@ -151,6 +198,51 @@ func (x *GenerateQuestionTitlesResponse) GetTags() []string {
 	return nil
 }
 
+// 获取答案的响应结果
+type GetAnswerResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Content       string                 `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetAnswerResponse) Reset() {
+	*x = GetAnswerResponse{}
+	mi := &file_question_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAnswerResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAnswerResponse) ProtoMessage() {}
+
+func (x *GetAnswerResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_question_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAnswerResponse.ProtoReflect.Descriptor instead.
+func (*GetAnswerResponse) Descriptor() ([]byte, []int) {
+	return file_question_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetAnswerResponse) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
 var File_question_proto protoreflect.FileDescriptor
 
 const file_question_proto_rawDesc = "" +
@@ -160,15 +252,20 @@ const file_question_proto_rawDesc = "" +
 	"\acontent\x18\x01 \x01(\tR\acontent\x12\x1e\n" +
 	"\n" +
 	"questionID\x18\x02 \x01(\rR\n" +
-	"questionID\"\x8c\x01\n" +
+	"questionID\",\n" +
+	"\x10GetAnswerRequest\x12\x18\n" +
+	"\acontent\x18\x01 \x01(\tR\acontent\"\x8c\x01\n" +
 	"\x1eGenerateQuestionTitlesResponse\x12\x10\n" +
 	"\x03Key\x18\x01 \x01(\tR\x03Key\x12\x16\n" +
 	"\x06titles\x18\x02 \x03(\tR\x06titles\x12\x14\n" +
 	"\x05total\x18\x03 \x01(\x05R\x05total\x12\x16\n" +
 	"\x06status\x18\x04 \x01(\tR\x06status\x12\x12\n" +
-	"\x04tags\x18\x05 \x03(\tR\x04tags2~\n" +
+	"\x04tags\x18\x05 \x03(\tR\x04tags\"-\n" +
+	"\x11GetAnswerResponse\x12\x18\n" +
+	"\acontent\x18\x01 \x01(\tR\acontent2\xc4\x01\n" +
 	"\x0fQuestionService\x12k\n" +
-	"\x16GenerateQuestionTitles\x12'.question.GenerateQuestionTitlesRequest\x1a(.question.GenerateQuestionTitlesResponseB\x17Z\x15siwuai/proto/questionb\x06proto3"
+	"\x16GenerateQuestionTitles\x12'.question.GenerateQuestionTitlesRequest\x1a(.question.GenerateQuestionTitlesResponse\x12D\n" +
+	"\tGetAnswer\x12\x1a.question.GetAnswerRequest\x1a\x1b.question.GetAnswerResponseB\x17Z\x15siwuai/proto/questionb\x06proto3"
 
 var (
 	file_question_proto_rawDescOnce sync.Once
@@ -182,16 +279,20 @@ func file_question_proto_rawDescGZIP() []byte {
 	return file_question_proto_rawDescData
 }
 
-var file_question_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_question_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_question_proto_goTypes = []any{
 	(*GenerateQuestionTitlesRequest)(nil),  // 0: question.GenerateQuestionTitlesRequest
-	(*GenerateQuestionTitlesResponse)(nil), // 1: question.GenerateQuestionTitlesResponse
+	(*GetAnswerRequest)(nil),               // 1: question.GetAnswerRequest
+	(*GenerateQuestionTitlesResponse)(nil), // 2: question.GenerateQuestionTitlesResponse
+	(*GetAnswerResponse)(nil),              // 3: question.GetAnswerResponse
 }
 var file_question_proto_depIdxs = []int32{
 	0, // 0: question.QuestionService.GenerateQuestionTitles:input_type -> question.GenerateQuestionTitlesRequest
-	1, // 1: question.QuestionService.GenerateQuestionTitles:output_type -> question.GenerateQuestionTitlesResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	1, // 1: question.QuestionService.GetAnswer:input_type -> question.GetAnswerRequest
+	2, // 2: question.QuestionService.GenerateQuestionTitles:output_type -> question.GenerateQuestionTitlesResponse
+	3, // 3: question.QuestionService.GetAnswer:output_type -> question.GetAnswerResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -208,7 +309,7 @@ func file_question_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_question_proto_rawDesc), len(file_question_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
