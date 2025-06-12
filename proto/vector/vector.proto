@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option go_package = "./";
+
+package vector;
+
+service vectorService {
+  // 获取问题的向量值
+  rpc GetVector (GetVectorRequest) returns (GetVectorResponse);
+}
+
+message GetVectorRequest {
+  repeated string content = 1; // 要生成向量的内容
+}
+
+message GetVectorResponse {
+  repeated VectorData vector = 1; // 二维float数组字段
+}
+
+message VectorData {
+  repeated float values = 1; // 每个向量维度的值
+}
