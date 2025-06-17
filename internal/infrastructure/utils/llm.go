@@ -63,7 +63,7 @@ func Generate(flag constant.AICode, value interface{}, cfg config.Config) (answe
 		promptTemplate = prompts.NewChatPromptTemplate([]prompts.MessageFormatter{
 			prompts.NewSystemMessagePromptTemplate("你是一个专业的问题标题和标签生成助手。你必须严格按照指定的JSON格式返回结果，不要添加任何额外的文字说明。", []string{}),
 			prompts.NewHumanMessagePromptTemplate(
-				"请根据以下问题内容生成3个合适的标题，并为该问题匹配3个相关标签。\n"+
+				"请根据以下问题内容生成3个合适的标题，并为该问题匹配3个相关标签。标签应该是广泛的技术领域或技术框架，例如：'Django'、'React'、'Python'、'Maven'、'Unity'、'Vue.js'、'MySQL'、'Docker'、'Spring Boot'、'机器学习'等，而不是过于细节的具体功能或特性。\n"+
 					"你必须严格按照以下JSON格式返回结果，不要添加任何其他内容：\n"+
 					"{\n"+
 					"  \"titles\": [\"标题1\", \"标题2\", \"标题3\"],\n"+
@@ -71,9 +71,10 @@ func Generate(flag constant.AICode, value interface{}, cfg config.Config) (answe
 					"}\n"+
 					"注意：\n"+
 					"1. 必须返回3个标题和3个标签\n"+
-					"2. 不要添加任何额外的说明文字\n"+
-					"3. 不要使用反引号包裹JSON\n"+
-					"4. 确保返回的是有效的JSON格式\n"+
+					"2. 标签必须是广泛的技术领域或框架名称，不要过于细节\n"+
+					"3. 不要添加任何额外的说明文字\n"+
+					"4. 不要使用反引号包裹JSON\n"+
+					"5. 确保返回的是有效的JSON格式\n"+
 					"问题内容如下：\n{{.content}}",
 				[]string{"content"}),
 		})
@@ -315,7 +316,7 @@ func setPrompt(flag constant.AICode, value interface{}) (promptValue string, err
 		a := value.(*dto.ArticlePrompt)
 		promptTemplate = prompts.NewChatPromptTemplate([]prompts.MessageFormatter{
 			prompts.NewSystemMessagePromptTemplate("你是一个专业的技术文章分析助手", []string{}),
-			prompts.NewHumanMessagePromptTemplate("请根据以下文章内容提取摘要和总结，并根据给定的标签匹配文章的标签。回答中应仅仅只包含三部分: 摘要、总结、匹配的标签，其他多余部分都不要。文章内容如下：\n{{.article}}\n\n标签列表：{{.tags}}}", []string{"article", "tags"}),
+			prompts.NewHumanMessagePromptTemplate("请根据以下文章内容提取摘要和总结，并根据给定的标签匹配文章的标签。回答中应仅仅只包含三部分: 摘要、总结、匹配的标签，其他多余部分都不要。请尽量选择广泛的技术领域或框架名称作为标签，例如：'Django'、'React'、'Python'、'Maven'、'Unity'等，而不是过于细节的具体功能或特性。文章内容如下：\n{{.article}}\n\n标签列表：{{.tags}}}", []string{"article", "tags"}),
 		})
 		input = map[string]any{
 			"article": a.Content,
