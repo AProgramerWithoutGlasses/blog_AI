@@ -7,6 +7,7 @@ const (
 	CodeAICode         AICode = "code"
 	QuestionAICode     AICode = "question"
 	QuestionAnswerCode AICode = "question_answer"
+	QuestionVectorCode AICode = "question_vector"
 )
 
 type JudgingSignInterface interface {
