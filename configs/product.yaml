@@ -2,22 +2,21 @@ server:
   port: "50051"
 
 mysql:
-  host: "127.0.0.1"
-  port: 3306
+  host: "8.154.36.180"
+  port: 8901
   username: "root"
   password: "lezhiedu@2024"
   dbname: "siwuai"
 
 redis:
-  addr: "127.0.0.1:6379"
-  password: "123456"
-  port: 6379
+  addr: "8.154.36.180:8902"
+  password: "lezhiedu@2024"
   db: 0
   timeout: 5
 
 etcd:
   endpoints:
-    - "127.0.0.1:2379"
+    - "8.154.36.180:2378"
   serviceName: "/services/siwuai"
   serviceAddr: "8.154.36.180:50051"
   ttl: 5
