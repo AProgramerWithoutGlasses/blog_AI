@@ -32,7 +32,7 @@ func NewArticleGRPCHandler(db *gorm.DB, cfg config.Config, cacheManager *cache.C
 
 // GetArticleInfoFirst 第一次获取文章的摘要、总结、标签
 func (a *articleGRPCHandler) GetArticleInfoFirst(ctx context.Context, req *pb.GetArticleInfoFirstRequest) (*pb.GetArticleInfoFirstResponse, error) {
-	articleFirst, err := a.repo.GetArticleInfoFirst(req.Content, req.Tags)
+	articleFirst, err := a.repo.GetArticleInfoFirst(req.Content, req.Tags, uint(req.ArticleID))
 	if err != nil {
 		zap.L().Error("GetArticleInfoFirst -> ", zap.Error(err))
 		return nil, err

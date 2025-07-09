@@ -15,7 +15,9 @@ import (
 	server "siwuai/internal/server/grpc"
 	pb "siwuai/proto/article"
 	pbcode "siwuai/proto/code"
+	pbquestion "siwuai/proto/question"
 	pbtoken "siwuai/proto/token"
+	pbvector "siwuai/proto/vector"
 )
 
 // RunGRPCServer 启动 gRPC 服务器，并启用 token 验证
@@ -42,6 +44,12 @@ func RunGRPCServer(port string, db *gorm.DB, rdb *redis_utils.RedisClient, bf *b
 
 	// 注册 TokenService
 	pbtoken.RegisterTokenServiceServer(grpcServer, server.NewTokenGRPCHandler(cfg))
+
+	// 注册 QuestionService
+	pbquestion.RegisterQuestionServiceServer(grpcServer, server.NewQuestionGRPCHandler(db, cfg, cacheManager, jc))
+
+	// 注册 VectorService
+	pbvector.RegisterVectorServiceServer(grpcServer, server.NewVectorGrpcHandler(cfg))
 
 	msg := fmt.Sprintf("gRPC 服务器成功启动在端口 %s...", port)
 	fmt.Println(msg)

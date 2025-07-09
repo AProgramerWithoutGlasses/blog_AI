@@ -141,12 +141,12 @@ func (cm *CacheManager) Set(key string, value []byte, cacheType constant.CacheTy
 	//cm.bloomFilter.Add([]byte(key))
 	cm.bfm.Add([]byte(key))
 
-	zap.L().Debug("缓存设置成功",
-		zap.String("key", key),
-		zap.String("type", string(cacheType)),
-		zap.Duration("expiration", expiration),
-		zap.String("data", string(value)),
-	)
+	//zap.L().Debug("缓存设置成功",
+	//	zap.String("key", key),
+	//	zap.String("type", string(cacheType)),
+	//	zap.Duration("expiration", expiration),
+	//	zap.String("data", string(value)),
+	//)
 }
 
 // Delete 删除缓存

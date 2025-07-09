@@ -47,6 +47,11 @@ type Config struct {
 		TemperatureCode    float64 `mapstructure:"temperatureCode"`
 		TemperatureArticle float64 `mapstructure:"temperatureArticle"`
 	} `mapstructure:"llm"`
+	Embedding struct {
+		ApiKey  string `mapstructure:"apiKey"`
+		Model   string `mapstructure:"model"`
+		BaseURL string `mapstructure:"baseURL"`
+	} `mapstructure:"embedding"`
 }
 
 // LoadConfig 加载并解析配置文件

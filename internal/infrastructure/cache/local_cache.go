@@ -28,7 +28,7 @@ type BigCacheClient struct {
 // shards int：缓存的分片数，影响并发性能和内存使用。
 func NewBigCacheClient(evictionTime time.Duration, maxEntrySize int, shards int) *BigCacheClient {
 	config := bigcache.DefaultConfig(evictionTime)
-	config.MaxEntriesInWindow = 50000  // 设置清理窗口的最大条目数，限制内存使用
+	config.MaxEntriesInWindow = 5000   // 设置清理窗口的最大条目数，限制内存使用
 	config.MaxEntrySize = maxEntrySize // 设置单个条目最大大小来自函数参数）
 	config.Shards = shards             // 设置分片数（来自函数参数），分片数越多并发性能越好，但内存开销增加
 	config.Verbose = false             // 禁用 bigcache 的详细日志，减少日志输出

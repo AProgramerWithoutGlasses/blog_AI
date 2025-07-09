@@ -1,0 +1,104 @@
+package grpc
+
+import (
+	"context"
+	"siwuai/internal/domain/model/dto"
+	"siwuai/internal/infrastructure/cache"
+	"siwuai/internal/infrastructure/config"
+	"siwuai/internal/infrastructure/constant"
+	"siwuai/internal/infrastructure/utils"
+	pbquestion "siwuai/proto/question"
+
+	"go.uber.org/zap"
+	"gorm.io/gorm"
+)
+
+// questionGRPCHandler 实现 pbquestion.QuestionServiceServer 接口
+type questionGRPCHandler struct {
+	pbquestion.UnimplementedQuestionServiceServer
+	db           *gorm.DB
+	cfg          config.Config
+	cacheManager *cache.CacheManager
+	jc           constant.JudgingCacheType
+}
+
+// NewQuestionGRPCHandler 构造函数
+func NewQuestionGRPCHandler(db *gorm.DB, cfg config.Config, cacheManager *cache.CacheManager, jc constant.JudgingCacheType) pbquestion.QuestionServiceServer {
+	return &questionGRPCHandler{
+		db:           db,
+		cfg:          cfg,
+		cacheManager: cacheManager,
+		jc:           jc,
+	}
+}
+
+// GenerateQuestionTitles 实现 gRPC 方法
+func (h *questionGRPCHandler) GenerateQuestionTitles(ctx context.Context, req *pbquestion.GenerateQuestionTitlesRequest) (*pbquestion.GenerateQuestionTitlesResponse, error) {
+	zap.L().Info("GenerateQuestionTitles called", zap.String("content", req.Content))
+
+	// 构造 AI 请求参数
+	questionPrompt := &dto.QuestionPrompt{
+		Content: req.Content,
+	}
+
+	// 调用 AI 生成标题和标签
+	result, err := utils.Generate(constant.QuestionAICode, questionPrompt, h.cfg)
+	if err != nil {
+		zap.L().Error("AI 生成标题失败", zap.Error(err))
+		return &pbquestion.GenerateQuestionTitlesResponse{
+			Status: "failed",
+		}, err
+	}
+
+	// 解析 AI 返回结果
+	titles, _ := result["titles"].([]string)
+	tags, _ := result["tags"].([]string)
+
+	// 确保至少有一个标题
+	if len(titles) == 0 {
+		titles = []string{"AI生成标题"}
+	}
+
+	// 确保标签不为nil
+	if tags == nil {
+		tags = []string{}
+	}
+
+	resp := &pbquestion.GenerateQuestionTitlesResponse{
+		Key:    "ai-question-key",
+		Titles: titles,
+		Total:  int32(len(titles)),
+		Status: "success",
+		Tags:   tags,
+	}
+	return resp, nil
+}
+
+// GetAnswer 实现 gRPC 方法
+func (h *questionGRPCHandler) GetAnswer(ctx context.Context, req *pbquestion.GetAnswerRequest) (*pbquestion.GetAnswerResponse, error) {
+	zap.L().Info("GetAnswer called", zap.String("content", req.Content))
+
+	// 构造 AI 请求参数
+	questionPrompt := &dto.QuestionPrompt{
+		Content: req.Content,
+	}
+
+	// 调用 AI 生成答案
+	result, err := utils.Generate(constant.QuestionAnswerCode, questionPrompt, h.cfg)
+	if err != nil {
+		zap.L().Error("AI 生成答案失败", zap.Error(err))
+		return nil, err
+	}
+
+	// 解析 AI 返回结果
+	answer, ok := result["answer"].(string)
+	if !ok {
+		zap.L().Error("AI 返回结果格式错误")
+		return nil, err
+	}
+
+	resp := &pbquestion.GetAnswerResponse{
+		Content: answer,
+	}
+	return resp, nil
+}

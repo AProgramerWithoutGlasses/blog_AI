@@ -54,6 +54,10 @@ func (a *articleDomainService) AskAI(key string, ap *dto.ArticlePrompt) (*dto.Ar
 
 	//fmt.Println("stream:", stream)
 
+	if answer["text"] == nil {
+		return &dto.ArticleFirst{}, nil
+	}
+
 	// 提取数据
 	articleFirst := a.ParseAnswer(answer["text"].(string))
 	//articleFirst := a.ParseAnswer(answer)
@@ -75,25 +79,16 @@ func (a *articleDomainService) AskAI(key string, ap *dto.ArticlePrompt) (*dto.Ar
 
 	// 持久化数据
 	articleE := &entity.Article{
-		Key:      key,
-		Abstract: articleFirst.Abstract,
-		Summary:  articleFirst.Summary,
+		Key:       key,
+		Abstract:  articleFirst.Abstract,
+		Summary:   articleFirst.Summary,
+		ArticleID: ap.ArticleID,
 	}
 
 	err = a.repo.SaveArticleInfo(articleE)
 	if err != nil {
 		return nil, fmt.Errorf("(a *articleDomainService) VerifyHash -> %v", err)
 	}
-
-	// 使用 strings.Split 按照 "、" 分割字符串
-	//tags := strings.Split(answer["matchedTags"].(string), "、")
-
-	//articleFirst := &dto.ArticleFirst{
-	//	Key:      key,
-	//	Abstract: answer["abstract"].(string),
-	//	Summary:  answer["summary"].(string),
-	//	Tags:     tags,
-	//}
 
 	return articleFirst, nil
 }
@@ -150,19 +145,19 @@ func (a *articleDomainService) DelArticleInfo(articleID uint) error {
 func (a *articleDomainService) ParseAnswer(answer string) *dto.ArticleFirst {
 	meta := dto.ArticleFirst{}
 
-	summaryRe := regexp.MustCompile(`(?s)摘要：\s*(.*?)\s*总结：`)
+	summaryRe := regexp.MustCompile(`(?s)摘要:\s*(.*?)\s*总结:`)
 	if matches := summaryRe.FindStringSubmatch(answer); len(matches) > 1 {
 		meta.Abstract = strings.TrimSpace(matches[1])
 	}
 
 	// 修复点2：处理中文标点
-	conclusionRe := regexp.MustCompile(`(?s)总结：\s*(.*?)\s*匹配的标签：`)
+	conclusionRe := regexp.MustCompile(`(?s)总结:\s*(.*?)\s*匹配的标签:`)
 	if matches := conclusionRe.FindStringSubmatch(answer); len(matches) > 1 {
 		meta.Summary = strings.TrimSpace(matches[1])
 	}
 
 	// 修复点3：支持中文冒号和换行
-	tagRe := regexp.MustCompile(`匹配的标签：\s*([^\n]+)`)
+	tagRe := regexp.MustCompile(`匹配的标签:\s*([^\n]+)`)
 	if matches := tagRe.FindStringSubmatch(answer); len(matches) > 1 {
 		tagStr := strings.ReplaceAll(matches[1], " ", "") // 移除空格
 		tags := strings.Split(tagStr, "、")

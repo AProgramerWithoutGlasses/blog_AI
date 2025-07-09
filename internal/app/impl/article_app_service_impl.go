@@ -24,7 +24,7 @@ func NewArticleAppService(repo service.ArticleDomainServiceInterface, code persi
 }
 
 // GetArticleInfoFirst 第一次获取文章的摘要、总结、标签
-func (a *articleAppService) GetArticleInfoFirst(content string, tags []string) (*dto.ArticleFirst, error) {
+func (a *articleAppService) GetArticleInfoFirst(content string, tags []string, articleID uint) (*dto.ArticleFirst, error) {
 	// 根据文章的内容生成 hash值
 	hashValue, err := utils.Hash(content)
 	if err != nil {
@@ -36,8 +36,9 @@ func (a *articleAppService) GetArticleInfoFirst(content string, tags []string) (
 		if err.Error() == "数据库中没有该 hash值" {
 			// 封装数据
 			ap := &dto.ArticlePrompt{
-				Content: content,
-				Tags:    tags,
+				Content:   content,
+				Tags:      tags,
+				ArticleID: articleID,
 			}
 			// 调用AI，提炼文章的摘要、总结、标签
 			articleFirst, err := a.repo.AskAI(hashValue, ap)

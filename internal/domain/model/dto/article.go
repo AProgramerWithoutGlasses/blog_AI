@@ -13,6 +13,7 @@ type ArticleSecond struct {
 }
 
 type ArticlePrompt struct {
-	Content string   // 询问AI的内容
-	Tags    []string // 询问AI时提供的标签
+	Content   string   // 询问AI的内容
+	Tags      []string // 询问AI时提供的标签
+	ArticleID uint     // 文章ID
 }
