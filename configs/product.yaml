@@ -36,3 +36,8 @@ llm:
   baseURL: "https://ark.cn-beijing.volces.com/api/v3"
   temperatureCode: 0.0
   temperatureArticle: 1.0
+
+embedding:
+  apiKey: "18e25f60-6aff-418f-96fe-55b8cee6a273"
+  model: "doubao-embedding-text-240715"
+  baseURL: "https://ark.cn-beijing.volces.com/api/v3"
