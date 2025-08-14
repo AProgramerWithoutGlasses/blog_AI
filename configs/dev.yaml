@@ -1,44 +1,44 @@
 server:
-  port: "50051"
+  port: ""
 
 mysql:
-  host: "192.168.10.4"
-  port: 3310
-  username: "root"
-  password: "123456"
-  dbname: "siwuai"
+  host: ""
+  port: 
+  username: ""
+  password: ""
+  dbname: ""
 
 redis:
-  addr: "192.168.10.4:6379"
-  password: "123456"
+  addr: ""
+  password: ""
   db: 0
   timeout: 5
 
 etcd:
   endpoints:
-    - "192.168.10.4:2379"
-  serviceName: "/services/siwuai"
-  serviceAddr: "192.168.10.7:50051"
+    - ""
+  serviceName: ""
+  serviceAddr: ""
   ttl: 5
 
 token:
-  secretKey: "123456"
-  generateTokenKey: "123456"
+  secretKey: ""
+  generateTokenKey: ""
 
 log:
-  logPath: "./logs"
-  appName: "siwuai"
+  logPath: ""
+  appName: ""
   level: -1
 
 llm:
-  apiKey: "18e25f60-6aff-418f-96fe-55b8cee6a273"
-  model: "deepseek-r1-250120"
-  embedModel: "doubao-embedding-text-240715"
-  baseURL: "https://ark.cn-beijing.volces.com/api/v3"
+  apiKey: ""
+  model: ""
+  embedModel: ""
+  baseURL: ""
   temperatureCode: 0.0
   temperatureArticle: 1.0
 
 embedding:
-  apiKey: "18e25f60-6aff-418f-96fe-55b8cee6a273"
-  model: "doubao-embedding-text-240715"
-  baseURL: "https://ark.cn-beijing.volces.com/api/v3"
+  apiKey: ""
+  model: ""
+  baseURL: ""
